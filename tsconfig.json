@@ -23,12 +23,8 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "*": [
-        "app/*", 
-      ]
+      "@/*": ["src/*"],
+      "*": ["app/*"],
     }
   },
   "include": [

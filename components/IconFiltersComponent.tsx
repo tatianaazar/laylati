@@ -14,7 +14,7 @@ type Filter = {
 
 const iconFilters: Filter[] = [
   { label: 'Budget', icon: 'money', navigateTo: 'Budget' },
-  { label: 'Location', icon: 'map-marker', navigateTo: 'Location' },
+  { label: 'Location', icon: 'map-marker', navigateTo: 'LocationStack' },
   { label: 'Event Type', icon: 'birthday-cake', navigateTo: 'Event Type' },
 ];
 

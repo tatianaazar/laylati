@@ -10,6 +10,8 @@ import FilterScreen from './FilterScreen';
 import LocationScreen from './LocationScreen';
 import ShoppingCartScreen from './ShoppingCartScreen';
 import UpdatesScreen from './UpdatesScreen';
+import LocationDetailsScreen from './LocationDetailsScreen';
+import LocationNavigator from './LocationNavigator';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -84,17 +86,10 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="Location"
-        component={LocationScreen}
+        name="LocationStack"
+        component={LocationNavigator}
         options={{
           title: ' ',
-          headerBackTitle: 'Location',
-          headerBackTitleStyle: {
-            color: 'black',
-            fontSize: 18,
-            fontFamily: 'josefin sans',
-            fontWeight: 'bold',
-          },
         }}
       />
       <Stack.Screen
@@ -128,6 +123,20 @@ export default function Layout() {
       <Stack.Screen
         name="Shopping Cart"
         component={ShoppingCartScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Your Cart',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Location Details"
+        component={LocationDetailsScreen}
         options={{
           title: ' ',
           headerBackTitle: 'Your Cart',

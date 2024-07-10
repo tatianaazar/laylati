@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import RNPickerSelect from 'react-native-picker-select';
 import StarRatingPicker from './StarRatingPicker'; // Adjust the path as necessary
+import { useNavigation } from '@react-navigation/native';
 
 const FilterScreen = () => {
   const [price, setPrice] = useState<string | null>(null);
   const [starRating, setStarRating] = useState<string | null>(null);
   const [eventType, setEventType] = useState<string | null>(null);
+  const navigation = useNavigation();
 
   const priceOptions = [
     { label: 'Highest to lowest', value: 'highest' },
@@ -46,7 +48,7 @@ const FilterScreen = () => {
 
       <View style={styles.filterOption}>
         <Text style={styles.filterLabel}>Location</Text>
-        <TouchableOpacity style={styles.filterDropdown}>
+        <TouchableOpacity style={styles.filterDropdown} onPress={() => navigation.navigate('Location')}>
           <Text style={styles.filterDropdownText}>Configure Location</Text>
         </TouchableOpacity>
       </View>
