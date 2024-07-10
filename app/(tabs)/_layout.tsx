@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { FontAwesome } from '@expo/vector-icons';
@@ -28,7 +27,6 @@ function Tabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName: React.ComponentProps<typeof FontAwesome>['name'];
-
           if (route.name === 'Vendors') {
             iconName = 'shopping-cart';
           } else if (route.name === 'Dashboard') {
@@ -38,7 +36,6 @@ function Tabs() {
           } else {
             iconName = 'circle';
           }
-
           return <FontAwesome name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'purple',
@@ -66,79 +63,82 @@ function Tabs() {
 
 export default function Layout() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Main">
-        <Stack.Screen
-          name="Main"
-          component={Tabs}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Budget"
-          component={BudgetScreen}
-          options={{ title: ' ',
-                     headerBackTitle: 'Total Budget',
-                     headerBackTitleStyle: {
-                      color: 'black',
-                      fontSize: 18,
-                      fontFamily: 'josefin sans',
-                      fontWeight: 'bold'
-                    }
-          }}
-        />
-        <Stack.Screen
-          name="Location"
-          component={LocationScreen}
-          options={{ title: ' ',
-                     headerBackTitle: 'Location',
-                     headerBackTitleStyle: {
-                      color: 'black',
-                      fontSize: 18,
-                      fontFamily: 'josefin sans',
-                      fontWeight: 'bold'
-                     }
-          }}
-        />
-        <Stack.Screen
-          name="Event Type"
-          component={EventTypeScreen}
-          options={{ title: ' ',
-                     headerBackTitle: 'Event Type',
-                     headerBackTitleStyle: {
-                      color: 'black',
-                      fontSize: 18,
-                      fontFamily: 'josefin sans',
-                      fontWeight: 'bold'
-                     }
-          }}
-        />
-        <Stack.Screen
-          name="Filter"
-          component={FilterScreen}
-          options={{ title: ' ',
-                     headerBackTitle: 'Filters',
-                     headerBackTitleStyle: {
-                      color: 'black',
-                      fontSize: 18,
-                      fontFamily: 'josefin sans',
-                      fontWeight: 'bold'
-                     }
-          }}
-        />
-        <Stack.Screen
-          name="Shopping Cart"
-          component={ShoppingCartScreen}
-          options={{ title: ' ',
-                     headerBackTitle: 'Your Cart',
-                     headerBackTitleStyle: {
-                      color: 'black',
-                      fontSize: 18,
-                      fontFamily: 'josefin sans',
-                      fontWeight: 'bold'
-                     }
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator initialRouteName="Main">
+      <Stack.Screen
+        name="Main"
+        component={Tabs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Budget"
+        component={BudgetScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Total Budget',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Location"
+        component={LocationScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Location',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Event Type"
+        component={EventTypeScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Event Type',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Filter"
+        component={FilterScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Filters',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Shopping Cart"
+        component={ShoppingCartScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: 'Your Cart',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+    </Stack.Navigator>
   );
 }

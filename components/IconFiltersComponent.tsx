@@ -1,7 +1,9 @@
+// components/IconFiltersComponent.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
 
 type Filter = {
   label: string;
@@ -9,26 +11,24 @@ type Filter = {
   navigateTo?: string;
 };
 
+
 const iconFilters: Filter[] = [
   { label: 'Budget', icon: 'money', navigateTo: 'Budget' },
   { label: 'Location', icon: 'map-marker', navigateTo: 'Location' },
   { label: 'Event Type', icon: 'birthday-cake', navigateTo: 'Event Type' },
 ];
 
-type RootStackParamList = {
-  Budget: undefined;
-  Location: undefined;
-  'Event Type': undefined;
-};
 
 const IconFiltersComponent = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation();
+
 
   const handleIconPress = (filter: Filter) => {
     if (filter.navigateTo) {
-      navigation.navigate(filter.navigateTo as keyof RootStackParamList);
+      navigation.navigate(filter.navigateTo);
     }
   };
+
 
   return (
     <View style={styles.filterIconsContainer}>
@@ -43,6 +43,7 @@ const IconFiltersComponent = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   filterIconsContainer: {
@@ -61,4 +62,7 @@ const styles = StyleSheet.create({
   },
 });
 
+
 export default IconFiltersComponent;
+
+

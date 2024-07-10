@@ -1,3 +1,4 @@
+// app/(tabs)/TabOneScreen.tsx
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
@@ -5,7 +6,7 @@ import { Card, Title, Paragraph } from 'react-native-paper';
 import TextFiltersComponent from '../../components/TextFiltersComponent';
 import IconFiltersComponent from '../../components/IconFiltersComponent';
 import { useNavigation } from '@react-navigation/native';
-import Carousel from 'react-native-snap-carousel';
+import Carousel from 'react-native-reanimated-carousel';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -17,6 +18,18 @@ const vendors = [
     image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
   },
   // ...other vendors
+  {
+    name: 'JORDANIAN DELIGHTS',
+    description: 'Jordanian Delights features a menu filled with classic Jordanian dishes, including mansaf, falafel, and more. Known for its generous portions and home-style cooking, this restaurant brings the essence of Jordanian hospitality to every meal.',
+    rating: 4.5,
+    image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
+  },
+  {
+    name: 'JORDANIAN DELIGHTS',
+    description: 'Jordanian Delights features a menu filled with classic Jordanian dishes, including mansaf, falafel, and more. Known for its generous portions and home-style cooking, this restaurant brings the essence of Jordanian hospitality to every meal.',
+    rating: 4.5,
+    image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
+  },
 ];
 
 const offers = [
@@ -53,7 +66,7 @@ const TabOneScreen = () => {
             <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('Filter')}>
               <FontAwesome name="filter" size={24} color="black" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('Shopping Cart')}>
+            <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('ShoppingCart')}>
               <FontAwesome name="shopping-cart" size={24} color="black" />
             </TouchableOpacity>
           </View>
@@ -75,8 +88,8 @@ const TabOneScreen = () => {
             ref={carouselRef}
             data={offers}
             renderItem={renderItem}
-            sliderWidth={screenWidth}
-            itemWidth={screenWidth}
+            width={screenWidth}
+            height={150}
             onSnapToItem={(index) => setActiveSlide(index)}
           />
           <View style={styles.paginationContainer}>
@@ -170,7 +183,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   offerImage: {
-    width: '100%',
+    width: '92%',
     height: 150,
     borderRadius: 8,
   },

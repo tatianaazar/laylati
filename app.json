@@ -1,9 +1,7 @@
 {
   "expo": {
     "name": "LaylatiApp",
-    "displayName": "LaylatiApp",
     "version": "1.0.0",
-    "entryPoint": "./app/_layout.tsx",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",

@@ -1,56 +1,60 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
 
-type TextFiltersComponentProps = {
+
+type Props = {
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
 };
 
-const filters = ['Catering', 'Music', 'Decorations', 'Photography'];
 
-const TextFiltersComponent: React.FC<TextFiltersComponentProps> = ({ activeFilter, setActiveFilter }) => {
+const textFilters = ['Catering', 'Venues', 'Entertainment', 'Decor', 'Photo/Videography'];
+
+
+const TextFiltersComponent: React.FC<Props> = ({ activeFilter, setActiveFilter }) => {
   return (
-    <View style={styles.filterContainer}>
-      {filters.map((filter) => (
-        <TouchableOpacity
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollView}>
+      {textFilters.map((filter) => (
+        <Pressable
           key={filter}
-          style={[
-            styles.filterButton,
-            activeFilter === filter && styles.activeFilterButton,
-          ]}
           onPress={() => setActiveFilter(filter)}
-        >
-          <Text style={[
-            styles.filterButtonText,
-            activeFilter === filter && styles.activeFilterButtonText,
-          ]}>{filter}</Text>
-        </TouchableOpacity>
+          style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}>
+          <Text style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}>
+            {filter}
+          </Text>
+        </Pressable>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
+
 const styles = StyleSheet.create({
-  filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 10,
+  scrollView: {
+    paddingVertical: 10,
   },
   filterButton: {
-    padding: 10,
-    marginHorizontal: 5,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#f0f0f0',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
   activeFilterButton: {
     backgroundColor: 'purple',
+    borderColor: 'purple',
   },
-  filterButtonText: {
+  filterText: {
     color: 'black',
   },
-  activeFilterButtonText: {
+  activeFilterText: {
     color: 'white',
   },
 });
 
+
 export default TextFiltersComponent;
+
+
