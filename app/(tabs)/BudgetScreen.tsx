@@ -1,29 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import CurrencyInput from 'react-native-currency-input';
-
 
 const BudgetScreen = () => {
   const [budget, setBudget] = useState<number | null>(null);
-
 
   const handleSave = () => {
     // Handle the save action
     console.log('Budget saved:', budget);
   };
 
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Total Budget</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+
       <CurrencyInput
         value={budget}
         onChangeValue={setBudget}
         prefix="$"
         delimiter=","
         separator="."
-        precision={2}
+        precision={3}
         style={styles.input}
+        placeholder="$0.000"
+        placeholderTextColor="black"
       />
       <Text style={styles.label}>Provide a budget</Text>
       <View style={styles.buttonContainer}>
@@ -34,61 +36,68 @@ const BudgetScreen = () => {
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: 'white',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginVertical: 20,
   },
   input: {
-    fontSize: 32,
+    fontSize: 48,
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 10,
-    width: '80%',
+    width: '90%',
     textAlign: 'center',
-    marginBottom: 20,
+    marginVertical: 10,
+    backgroundColor: '#f9f9f9',
+    color: 'black', // Ensures the input text is black
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'gray',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   buttonContainer: {
+    position: 'absolute',
+    bottom: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '60%',
+    width: '100%',
+    paddingHorizontal: 20,
   },
   clearButton: {
     backgroundColor: '#e0e0e0',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
     borderRadius: 8,
   },
   saveButton: {
     backgroundColor: 'black',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
     borderRadius: 8,
   },
   clearButtonText: {
     color: 'black',
+    fontSize: 16,
   },
   saveButtonText: {
     color: 'white',
+    fontSize: 16,
   },
 });
-
 
 export default BudgetScreen;

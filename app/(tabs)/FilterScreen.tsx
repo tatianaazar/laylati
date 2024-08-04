@@ -48,7 +48,7 @@ const FilterScreen = () => {
 
       <View style={styles.filterOption}>
         <Text style={styles.filterLabel}>Location</Text>
-        <TouchableOpacity style={styles.filterDropdown} onPress={() => navigation.navigate('Location')}>
+        <TouchableOpacity style={styles.filterDropdown} onPress={() => navigation.navigate('LocationStack')}>
           <Text style={styles.filterDropdownText}>Configure Location</Text>
         </TouchableOpacity>
       </View>

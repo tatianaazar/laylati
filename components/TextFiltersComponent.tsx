@@ -1,15 +1,13 @@
+// src/components/TextFiltersComponent.tsx
 import React from 'react';
 import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
-
 
 type Props = {
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
 };
 
-
 const textFilters = ['Catering', 'Venues', 'Entertainment', 'Decor', 'Photo/Videography'];
-
 
 const TextFiltersComponent: React.FC<Props> = ({ activeFilter, setActiveFilter }) => {
   return (
@@ -17,9 +15,9 @@ const TextFiltersComponent: React.FC<Props> = ({ activeFilter, setActiveFilter }
       {textFilters.map((filter) => (
         <Pressable
           key={filter}
-          onPress={() => setActiveFilter(filter)}
-          style={[styles.filterButton, activeFilter === filter && styles.activeFilterButton]}>
-          <Text style={[styles.filterText, activeFilter === filter && styles.activeFilterText]}>
+          onPress={() => setActiveFilter(filter.toLowerCase())} // Ensure the category matches backend data format
+          style={[styles.filterButton, activeFilter === filter.toLowerCase() && styles.activeFilterButton]}>
+          <Text style={[styles.filterText, activeFilter === filter.toLowerCase() && styles.activeFilterText]}>
             {filter}
           </Text>
         </Pressable>
@@ -27,7 +25,6 @@ const TextFiltersComponent: React.FC<Props> = ({ activeFilter, setActiveFilter }
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -54,7 +51,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default TextFiltersComponent;
-
-

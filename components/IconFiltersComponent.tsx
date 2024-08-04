@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   filterIcon: {
     alignItems: 'center',
     marginHorizontal: 10,
+    marginLeft: 30
   },
   filterLabel: {
     marginTop: 8,

@@ -12,6 +12,7 @@ import ShoppingCartScreen from './ShoppingCartScreen';
 import UpdatesScreen from './UpdatesScreen';
 import LocationDetailsScreen from './LocationDetailsScreen';
 import LocationNavigator from './LocationNavigator';
+import VendorListScreen from './VendorListScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -121,7 +122,7 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="Shopping Cart"
+        name="ShoppingCart"
         component={ShoppingCartScreen}
         options={{
           title: ' ',
@@ -140,6 +141,20 @@ export default function Layout() {
         options={{
           title: ' ',
           headerBackTitle: 'Your Cart',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontFamily: 'josefin sans',
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Vendor List"
+        component={VendorListScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: ' ',
           headerBackTitleStyle: {
             color: 'black',
             fontSize: 18,

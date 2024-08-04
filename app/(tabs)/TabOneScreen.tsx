@@ -1,5 +1,4 @@
-// app/(tabs)/TabOneScreen.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Card, Title, Paragraph } from 'react-native-paper';
@@ -7,54 +6,47 @@ import TextFiltersComponent from '../../components/TextFiltersComponent';
 import IconFiltersComponent from '../../components/IconFiltersComponent';
 import { useNavigation } from '@react-navigation/native';
 import Carousel from 'react-native-reanimated-carousel';
+import axios from 'axios';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const vendors = [
-  {
-    name: 'JORDANIAN DELIGHTS',
-    description: 'Jordanian Delights features a menu filled with classic Jordanian dishes, including mansaf, falafel, and more. Known for its generous portions and home-style cooking, this restaurant brings the essence of Jordanian hospitality to every meal.',
-    rating: 4.5,
-    image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
-  },
-  // ...other vendors
-  {
-    name: 'JORDANIAN DELIGHTS',
-    description: 'Jordanian Delights features a menu filled with classic Jordanian dishes, including mansaf, falafel, and more. Known for its generous portions and home-style cooking, this restaurant brings the essence of Jordanian hospitality to every meal.',
-    rating: 4.5,
-    image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
-  },
-  {
-    name: 'JORDANIAN DELIGHTS',
-    description: 'Jordanian Delights features a menu filled with classic Jordanian dishes, including mansaf, falafel, and more. Known for its generous portions and home-style cooking, this restaurant brings the essence of Jordanian hospitality to every meal.',
-    rating: 4.5,
-    image: 'https://via.placeholder.com/300x150.png?text=JORDANIAN+DELIGHTS',
-  },
-];
-
 const offers = [
-  { image: 'https://via.placeholder.com/300x150.png?text=Offer+1' },
-  { image: 'https://via.placeholder.com/300x150.png?text=Offer+2' },
-  { image: 'https://via.placeholder.com/300x150.png?text=Offer+3' },
+  { image: 'https://www.infinity-weddingsandevents.com/wp-content/uploads/2020/01/luxury-tables-setting-lebanese-wedding.jpg' },
+  { image: 'https://cdn0.weddingwire.com/vendor/389027/3_2/960/jpg/1446925641782-slide5.jpeg' },
+  { image: 'https://th.bing.com/th/id/OPEC.mPOLoikr2JOSQg474C474?w=200&h=220&rs=1&o=5&dpr=1.3&pid=21.1' },
 ];
 
 const TabOneScreen = () => {
   const navigation = useNavigation();
   const [showFilterBar, setShowFilterBar] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('Catering');
+  const [activeFilter, setActiveFilter] = useState('catering'); // Initialize with a category if needed
+  const [vendors, setVendors] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
   const carouselRef = useRef(null);
 
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    if (offsetY > 455) {
-      setShowFilterBar(true);
-    } else {
-      setShowFilterBar(false);
+  useEffect(() => {
+    if (activeFilter) {
+      fetchVendorsByCategory(activeFilter);
+    }
+  }, [activeFilter]);
+
+  const fetchVendorsByCategory = async (category) => {
+    try {
+      console.log(`Fetching vendors for category: ${category}`);
+      const response = await axios.get(`http://192.168.1.133:3000/api/vendors/${category}`);
+      console.log("Response:", response.data);
+      setVendors(response.data);
+    } catch (error) {
+      console.error('Error fetching vendors:', error.response ? error.response.data : error.message);
     }
   };
 
-  const renderItem = ({ item }: { item: { image: string } }) => (
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setShowFilterBar(offsetY > 455);
+  };
+
+  const renderItem = ({ item }) => (
     <Image source={{ uri: item.image }} style={styles.offerImage} />
   );
 
@@ -80,7 +72,7 @@ const TabOneScreen = () => {
         <View style={styles.header}>
           <Text style={styles.title}>LAYLATI</Text>
           <View style={styles.searchContainer}>
-            <TextInput style={styles.searchInput} placeholder="Search" />
+            <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="black" />
             <FontAwesome name="search" size={24} color="black" />
           </View>
           <Text style={styles.offersTitle}>Offers of The Week</Text>
@@ -111,12 +103,27 @@ const TabOneScreen = () => {
           />
           <FontAwesome name="caret-down" size={24} color="black" style={styles.arrowIcon} />
         </View>
-        {vendors.map((vendor, index) => (
-          <Card key={index} style={styles.card}>
-            <Card.Cover source={{ uri: vendor.image }} />
+        {vendors.map((vendor) => (
+          <Card key={vendor._id} style={styles.card}>
+            <Card.Cover source={{ uri: vendor.details?.image || 'default_image_url_here' }} />
             <Card.Content>
               <Title>{vendor.name}</Title>
-              <Paragraph>{vendor.description}</Paragraph>
+              <Paragraph>{vendor.details?.description || 'No description available'}</Paragraph>
+              {vendor.rating && (
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>Rating: {vendor.rating}</Text>
+                  <View style={styles.starsContainer}>
+                    {[...Array(5)].map((_, i) => (
+                      <FontAwesome
+                        key={i}
+                        name="star"
+                        size={20}
+                        color={i < vendor.rating ? "orange" : "gray"}
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
             </Card.Content>
           </Card>
         ))}
@@ -162,7 +169,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'purple',
     textAlign: 'center',
-    marginVertical: 16,
+    marginVertical: 20,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -176,11 +183,15 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 8,
     paddingHorizontal: 12,
+    fontSize: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   offersTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 16,
+    marginLeft: 100,
   },
   offerImage: {
     width: '92%',
@@ -206,6 +217,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 16,
+    marginLeft: 154,
   },
   arrowIcon: {
     alignSelf: 'center',
@@ -215,6 +227,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 8,
     marginHorizontal: 16,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  ratingText: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  starsContainer: {
+    flexDirection: 'row',
   },
 });
 
