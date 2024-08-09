@@ -1,12 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { Card, Title, Paragraph } from 'react-native-paper';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { Card } from 'react-native-paper';
 import TextFiltersComponent from '../../components/TextFiltersComponent';
-import IconFiltersComponent from '../../components/IconFiltersComponent';
-import { useNavigation } from '@react-navigation/native';
 import Carousel from 'react-native-reanimated-carousel';
 import axios from 'axios';
+import { RootStackParamList } from './types/types';
+import AppLoading from 'expo-app-loading';
+import { useFonts, JosefinSans_400Regular, JosefinSans_600SemiBold, JosefinSans_700Bold } from '@expo-google-fonts/josefin-sans';
+import { Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
+import SearchIcon from '../../assets/images/Search.svg';
+import EventTypeIcon from '../../assets/images/cake.svg';
+import EventTypeIconSaved from '../../assets/images/cakeSelected.svg';
+import BudgetIcon from '../../assets/images/dollar-square.svg';
+import BudgetIconSaved from '../../assets/images/dollar-square-saved.svg';
+import LocationIcon from '../../assets/images/location.svg';
+import FilterIcon from '../../assets/images/filter.svg';
+import ShoppingCartIcon from '../../assets/images/bag.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -18,22 +29,42 @@ const offers = [
 
 const TabOneScreen = () => {
   const navigation = useNavigation();
-  const [showFilterBar, setShowFilterBar] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('catering'); // Initialize with a category if needed
+  const route = useRoute<RouteProp<RootStackParamList, 'Main'>>();
+  const [activeFilter, setActiveFilter] = useState('featured'); // Initialize with a category if needed
   const [vendors, setVendors] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
   const carouselRef = useRef(null);
+  const [isEventTypeSaved, setIsEventTypeSaved] = useState(route.params?.isEventTypeSaved || false);
+  const [isBudgetSaved, setIsBudgetSaved] = useState(route.params?.isBudgetSaved || false);
+  const [fontsLoaded] = useFonts({
+    JosefinSans_400Regular,
+    JosefinSans_600SemiBold,
+    JosefinSans_700Bold,
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
 
   useEffect(() => {
-    if (activeFilter) {
+    if (activeFilter && activeFilter !== 'featured' && activeFilter !== 'venues') {
       fetchVendorsByCategory(activeFilter);
     }
   }, [activeFilter]);
 
+  useEffect(() => {
+    console.log('Params:', route.params);
+    if (route.params?.isEventTypeSaved !== undefined) {
+      setIsEventTypeSaved(route.params.isEventTypeSaved);
+    }
+    if (route.params?.isBudgetSaved !== undefined) {
+      setIsBudgetSaved(route.params.isBudgetSaved);
+    }
+  }, [route.params]);
+
   const fetchVendorsByCategory = async (category) => {
     try {
       console.log(`Fetching vendors for category: ${category}`);
-      const response = await axios.get(`http://192.168.1.133:3000/api/vendors/${category}`);
+      const response = await axios.get(`http://192.168.0.3:3000/api/vendors/${category}`);
       console.log("Response:", response.data);
       setVendors(response.data);
     } catch (error) {
@@ -41,25 +72,28 @@ const TabOneScreen = () => {
     }
   };
 
-  const handleScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setShowFilterBar(offsetY > 455);
-  };
-
   const renderItem = ({ item }) => (
     <Image source={{ uri: item.image }} style={styles.offerImage} />
   );
 
+  const navigateToDetails = (vendor) => {
+    navigation.navigate('VendorDetails', { vendor });
+  };
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
   return (
     <View style={styles.container}>
-      {showFilterBar && (
-        <View style={styles.fixedFilterBar}>
-          <View style={styles.iconContainer}>
-            <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('Filter')}>
-              <FontAwesome name="filter" size={24} color="black" />
+      {activeFilter !== 'featured' && activeFilter !== 'venues' && (
+        <View style={styles.fixedFilterBar2}>
+          <View style={styles.iconContainer2}>
+            <TouchableOpacity style={styles.icon2} onPress={() => navigation.navigate('Filter')}>
+              <FilterIcon width={24} height={24} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.icon} onPress={() => navigation.navigate('ShoppingCart')}>
-              <FontAwesome name="shopping-cart" size={24} color="black" />
+            <TouchableOpacity style={styles.icon2} onPress={() => navigation.navigate('ShoppingCart')}>
+              <ShoppingCartIcon width={24} height={24} />
             </TouchableOpacity>
           </View>
           <TextFiltersComponent
@@ -68,65 +102,143 @@ const TabOneScreen = () => {
           />
         </View>
       )}
-      <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
+      <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.title}>LAYLATI</Text>
-          <View style={styles.searchContainer}>
-            <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="black" />
-            <FontAwesome name="search" size={24} color="black" />
-          </View>
-          <Text style={styles.offersTitle}>Offers of The Week</Text>
-          <Carousel
-            ref={carouselRef}
-            data={offers}
-            renderItem={renderItem}
-            width={screenWidth}
-            height={150}
-            onSnapToItem={(index) => setActiveSlide(index)}
-          />
-          <View style={styles.paginationContainer}>
-            {offers.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.paginationDot,
-                  activeSlide === index && styles.paginationDotActive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.filtersTitle}>Filters</Text>
-          <IconFiltersComponent />
-          <TextFiltersComponent
-            activeFilter={activeFilter}
-            setActiveFilter={setActiveFilter}
-          />
-          <FontAwesome name="caret-down" size={24} color="black" style={styles.arrowIcon} />
-        </View>
-        {vendors.map((vendor) => (
-          <Card key={vendor._id} style={styles.card}>
-            <Card.Cover source={{ uri: vendor.details?.image || 'default_image_url_here' }} />
-            <Card.Content>
-              <Title>{vendor.name}</Title>
-              <Paragraph>{vendor.details?.description || 'No description available'}</Paragraph>
-              {vendor.rating && (
-                <View style={styles.ratingContainer}>
-                  <Text style={styles.ratingText}>Rating: {vendor.rating}</Text>
-                  <View style={styles.starsContainer}>
-                    {[...Array(5)].map((_, i) => (
-                      <FontAwesome
-                        key={i}
-                        name="star"
-                        size={20}
-                        color={i < vendor.rating ? "orange" : "gray"}
-                      />
-                    ))}
-                  </View>
+          {(activeFilter === 'featured' || activeFilter === 'venues') && (
+            <>
+              <Text style={styles.title}>LAYLATI</Text>
+              <View style={styles.searchWrapper}>
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search"
+                    placeholderTextColor="#79747E"
+                  />
                 </View>
-              )}
-            </Card.Content>
-          </Card>
-        ))}
+                <SearchIcon width={30} height={32} style={styles.searchIcon} />
+              </View>
+              <View style={styles.createEventContainer}>
+                <Text style={styles.createEventTitle}>Create Event</Text>
+                <View style={styles.iconsRow}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('EventType')}>
+                    {isEventTypeSaved ? <EventTypeIconSaved width={30} height={30} /> : <EventTypeIcon width={30} height={30} />}
+                    <Text style={styles.iconLabel}>Event Type</Text>
+                  </TouchableOpacity>
+                  <View style={styles.separator} />
+                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Budget')}>
+                    {isBudgetSaved ? <BudgetIconSaved width={30} height={30} /> : <BudgetIcon width={30} height={30} />}
+                    <Text style={styles.iconLabel}>Budget</Text>
+                  </TouchableOpacity>
+                  <View style={styles.separator} />
+                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Location')}>
+                    <LocationIcon width={30} height={30} />
+                    <Text style={styles.iconLabel}>Location</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <TextFiltersComponent
+                activeFilter={activeFilter}
+                setActiveFilter={setActiveFilter}
+              />
+              <View style={styles.horizontalLine} />
+            </>
+          )}
+          {(activeFilter !== 'featured' && activeFilter !== 'venues') && (
+            <>
+              <ScrollView>
+      {vendors.map((vendor) => (
+        <TouchableOpacity key={vendor._id} onPress={() => navigateToDetails(vendor)}>
+          <View style={styles.vendorItem}>
+            <Image source={{ uri: vendor.details?.image }} style={styles.vendorImage} />
+            <View style={styles.vendorInfo}>
+              <Text style={styles.vendorName}>{vendor.name}</Text>
+              <Text style={styles.vendorDescription}>{vendor.details?.description}</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+            </>
+          )}
+
+          {activeFilter === 'featured' && (
+            <View>
+              <View style={styles.carouselSection}>
+                <Text style={styles.carouselTitle}>Curated Packages</Text>
+                <Carousel
+                  ref={carouselRef}
+                  data={offers}
+                  renderItem={renderItem}
+                  width={screenWidth}
+                  height={150}
+                  onSnapToItem={(index) => setActiveSlide(index)}
+                />
+                <View style={styles.paginationContainer}>
+                  {offers.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.paginationDot,
+                        activeSlide === index && styles.paginationDotActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+              <View style={styles.carouselSection}>
+                <Text style={styles.carouselTitle}>Featured Catering</Text>
+                <Carousel
+                  ref={carouselRef}
+                  data={offers}
+                  renderItem={renderItem}
+                  width={screenWidth}
+                  height={150}
+                  onSnapToItem={(index) => setActiveSlide(index)}
+                />
+                <View style={styles.paginationContainer}>
+                  {offers.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.paginationDot,
+                        activeSlide === index && styles.paginationDotActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+              <View style={styles.carouselSection}>
+                <Text style={styles.carouselTitle}>Featured Venues</Text>
+                <Carousel
+                  ref={carouselRef}
+                  data={offers}
+                  renderItem={renderItem}
+                  width={screenWidth}
+                  height={150}
+                  onSnapToItem={(index) => setActiveSlide(index)}
+                />
+                <View style={styles.paginationContainer}>
+                  {offers.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.paginationDot,
+                        activeSlide === index && styles.paginationDotActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
+
+          {activeFilter === 'venues' && (
+            <View>
+              {/* Implement the custom logic for the Venues category here */}
+              <Text style={styles.customVenuesText}>Custom content for Venues category</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -143,7 +255,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1,
-    flexDirection: 'column',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    backgroundColor: 'white',
+  },
+  fixedFilterBar2: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    flexDirection: 'column', // Change to column to stack items vertically
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -152,14 +278,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 10,
+    width: '22%',
+  },
+  topIconsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginVertical: 16,
   },
   icon: {
     paddingHorizontal: 10,
     marginTop: 30,
+  },
+  iconContainer2: {
+    flexDirection: 'row', // Ensure icons are aligned horizontally
+    justifyContent: 'space-between', // Ensure the icons are spaced correctly
+    alignItems: 'center',
+    width: '100%', // Adjust as needed, previously 100% which hid the TextFiltersComponent
+    paddingHorizontal: 10,
+    marginTop: 20,
+  },
+  icon2: {
+    paddingHorizontal: 10,
+    marginTop: 0,
+  },
+  topIcon: {
+    paddingHorizontal: 10,
   },
   header: {
     padding: 16,
@@ -169,76 +318,150 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'purple',
     textAlign: 'center',
-    marginVertical: 20,
+    marginVertical: 26,
+    fontFamily: 'JosefinSans_700Bold',
+    marginBottom: 14,
+  },
+  searchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#79747E',
+    borderRadius: 16,
+    width: 314,
+    height: 32,
+    paddingLeft: 10,
+    backgroundColor: 'white',
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    height: '100%',
     fontSize: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    color: '#79747E',
+    fontFamily: 'Montserrat_400Regular',
   },
-  offersTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  searchIcon: {
+    marginLeft: 8,
+  },
+  createEventContainer: {
+    alignItems: 'center',
     marginVertical: 16,
-    marginLeft: 100,
+  },
+  createEventTitle: {
+    fontSize: 12,
+    marginVertical: 0,
+    marginBottom: 20,
+    fontFamily: 'Montserrat_400Regular',
+    alignItems: 'center',
+  },
+  iconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconLabel: {
+    marginTop: 8,
+    fontSize: 10,
+    fontFamily: 'Montserrat_400Regular',
+  },
+  separator: {
+    width: 1,
+    height: 60,
+    backgroundColor: '#79747E',
+    marginHorizontal: 16,
+  },
+  horizontalLine: {
+    height: 0.3,
+    backgroundColor: '#79747E',
+    marginVertical: 16,
+    marginHorizontal: 16,
+    marginLeft: 0,
+    marginRight: 0,
+    marginBottom: 5,
+  },
+  carouselSection: {
+    marginVertical: 10,
+  },
+  carouselTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontFamily: 'Montserrat_400Regular',
   },
   offerImage: {
-    width: '92%',
-    height: 150,
+    width: screenWidth - 32, // Adjust the width to fit the screen with some padding
+    height: 118,
     borderRadius: 8,
   },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: 8,
+    marginVertical: 0,
+    marginTop: -20,
   },
   paginationDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: 'gray',
+    backgroundColor: '#E6CBF6',
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: 'orange',
-  },
-  filtersTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 16,
-    marginLeft: 154,
-  },
-  arrowIcon: {
-    alignSelf: 'center',
-    marginVertical: 10,
+    backgroundColor: '#FF5719',
   },
   card: {
     borderRadius: 8,
     marginVertical: 8,
     marginHorizontal: 16,
   },
-  ratingContainer: {
+  vendorList: {
+    marginTop: 16,
+  },
+  vendorItem: {
     flexDirection: 'row',
+    padding: 16,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'white',
     alignItems: 'center',
-    marginTop: 8,
   },
-  ratingText: {
-    fontSize: 16,
-    marginRight: 8,
+  vendorImage: {
+    width: 123,
+    height: 123,
+    borderRadius: 8,
+    marginRight: 16,
   },
-  starsContainer: {
-    flexDirection: 'row',
+  vendorInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  vendorName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat_700Bold',
+    marginBottom: 4,
+  },
+  vendorDescription: {
+    fontSize: 14,
+    marginBottom: 4,
+    fontFamily: 'Montserrat_400Regular',
+  },
+  vendorRating: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat_600SemiBold',
+  },
+  customVenuesText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 16,
   },
 });
 

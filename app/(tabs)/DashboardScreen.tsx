@@ -70,12 +70,13 @@ const DashboardScreen = () => {
 
   const renderItem = ({ item }: { item: Event }) => (
     <View style={styles.eventItem}>
-      <View>
-        <Text style={styles.eventName}>{item.name}</Text>
-        <Text style={styles.eventDetails}>{item.type} - {item.date.toDateString()}</Text>
-      </View>
-      <TouchableOpacity onPress={() => handleDeleteEvent(item.id)}>
-        <FontAwesome name="ellipsis-v" size={24} color="black" />
+      <Text style={styles.eventName}>{item.name}</Text>
+      <TouchableOpacity onPress={() => handleDeleteEvent(item.id)} style={styles.iconContainer}>
+        <View style={styles.verticalDots}>
+          <View style={styles.dot} />
+          <View style={[styles.dot, { marginVertical: 3 }]} />
+          <View style={styles.dot} />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -120,15 +121,17 @@ const DashboardScreen = () => {
             <Text style={styles.modalText}>Add New Event</Text>
             <TextInput
               style={styles.input}
-              placeholder="Event Name"
+              placeholder="Enter Event Name"
               value={eventName}
               onChangeText={setEventName}
+              placeholderTextColor={'black'}
             />
             <TextInput
               style={styles.input}
-              placeholder="Event Type"
+              placeholder="Enter Event Type"
               value={eventType}
               onChangeText={setEventType}
+              placeholderTextColor={'black'}
             />
             <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={styles.datePicker}>
               <Text style={styles.datePickerText}>
@@ -152,6 +155,7 @@ const DashboardScreen = () => {
   );
 };
 
+   
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -166,14 +170,15 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     position: 'absolute',
-    left: 16,
-    top: 16,
+    left: 14,
+    top: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
     color: 'black',
-    marginTop: 24,
+    marginTop: 28,
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -181,9 +186,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   message: {
-    fontSize: 16,
-    color: 'gray',
+    width: 250,
+    height: 100,
+    position: 'absolute',
+    top: 80,
+    left: 50,
+    gap: 0,
+    opacity: 1, // Set to 1 so the text is visible
+    fontFamily: 'Montserrat', // Ensure you have Montserrat font loaded in your project
+    fontSize: 20,
+    fontWeight: '400',
+    lineHeight: 24.4,
+    textAlign: 'center',
+    color: '#A1A1A1', // Ensure the text color is set to black or the desired color
   },
+  
   fab: {
     position: 'absolute',
     bottom: 30,
@@ -204,22 +221,27 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addEventButton: {
+    width: 206 ,
     position: 'absolute',
     bottom: 100,
     right: 30,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 30,
     borderWidth: 1,
-    borderColor: 'gray',
-    backgroundColor: 'white',
+    borderColor: '#E6CBF6',
+    backgroundColor: '#E6CBF6',
     flexDirection: 'row',
     alignItems: 'center',
   },
   addEventButtonText: {
-    fontSize: 16,
     color: 'black',
-    marginRight: 10,
+    marginLeft: 24,
+    alignItems: 'center',
+    fontFamily: 'Montserrat',
+    fontSize: 15, 
+
+
   },
   modalContainer: {
     flex: 1,
@@ -247,6 +269,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
+    color: 'black',
+    fontFamily: 'Montserrat',
   },
   input: {
     height: 40,
@@ -256,6 +280,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 10,
     width: '100%',
+    color: 'black',
   },
   datePicker: {
     height: 40,
@@ -280,23 +305,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    borderColor: '#A1A1A1',
+    borderRadius: 50, // High border radius to make it fully rounded
+    backgroundColor: '#ffffff',
     marginBottom: 10,
+    width: '90%',
+    alignSelf: 'center',
+    
   },
   eventName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '400',
+    color: '#000000',
+    textAlign: 'center',
+    flex: 1,
+    fontFamily: 'Montserrat',
   },
   eventDetails: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'gray',
   },
   listContent: {
     paddingBottom: 100,
+  },
+  verticalDots: {
+    justifyContent: 'center', // Center the dots vertically within the container
+    alignItems: 'center',
+    height: 24, // Adjust height to match the space between dots
+  },
+  dot: {
+    width: 5, // Size of each dot
+    height: 5,
+    borderRadius: 9, // Make the dots round
+    backgroundColor: '#4A4A4A', // Black color for the dots
   },
 });
 

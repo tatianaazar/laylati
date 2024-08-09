@@ -3,7 +3,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
+import AppLoading from 'expo-app-loading';
+import { useFonts } from '../hooks/useFonts';
 
 type Filter = {
   label: string;
@@ -21,6 +22,7 @@ const iconFilters: Filter[] = [
 
 const IconFiltersComponent = () => {
   const navigation = useNavigation();
+  const fontsLoaded = useFonts();
 
 
   const handleIconPress = (filter: Filter) => {
@@ -60,6 +62,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     color: 'black',
+    fontFamily: 'Montserrat_400Regular',
   },
 });
 

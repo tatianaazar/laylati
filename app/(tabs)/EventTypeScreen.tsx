@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from './types/types';
 
 const EventTypeScreen = () => {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
-
+  const [isSaved, setIsSaved] = useState(false);
+  const navigation = useNavigation();
 
   const eventTypes = [
     'Wedding',
@@ -15,17 +18,16 @@ const EventTypeScreen = () => {
     'Other',
   ];
 
-
   const handleEventPress = (eventType: string) => {
     setSelectedEvent(eventType);
+    setIsSaved(false); // Reset saved state when a new event type is selected
   };
-
 
   const handleSavePress = () => {
-    // Handle save action here
-    console.log('Selected Event Type:', selectedEvent);
+    setIsSaved(true);
+    console.log('Event type saved:', selectedEvent);
+    navigation.navigate('Main', { isEventTypeSaved: true });
   };
-
 
   return (
     <View style={styles.container}>
@@ -50,67 +52,66 @@ const EventTypeScreen = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <TouchableOpacity style={styles.saveButton} onPress={handleSavePress}>
-        <Text style={styles.saveButtonText}>Save</Text>
+      <TouchableOpacity
+        style={[styles.saveButton, isSaved && styles.savedButton]}
+        onPress={handleSavePress}
+        disabled={!selectedEvent}
+      >
+        <Text style={styles.saveButtonText}>{isSaved ? 'Saved!' : 'Save'}</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 80,
     backgroundColor: 'white',
-    justifyContent: 'center',  // Center vertically
-    marginTop: -60
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   scrollView: {
     flexGrow: 1,
     justifyContent: 'center',
   },
   eventButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 25,  // Increased padding for larger buttons
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    backgroundColor: '#F1F1F1',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 20,
     marginBottom: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
+    width: 233,
+    height: 71,
+    alignSelf: 'center',
   },
   selectedEventButton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#E6CBF6',
   },
   eventButtonText: {
     fontSize: 18,
-    color: 'purple',
+    color: '#000000',
+    fontFamily: 'Montserrat_400Regular',
   },
   selectedEventButtonText: {
     fontWeight: 'bold',
   },
   saveButton: {
-    backgroundColor: 'black',
+    backgroundColor: '#333',
     paddingVertical: 15,
-    paddingHorizontal: 20,
     borderRadius: 20,
     alignItems: 'center',
     alignSelf: 'center',
-    marginTop: 0,
-    marginBottom: -25,
-    width: '150%',
+    marginTop: 20,
+    width: '100%',
   },
   saveButtonText: {
     fontSize: 16,
     color: 'white',
   },
+  savedButton: {
+    backgroundColor: '#35383F',
+  },
 });
-
 
 export default EventTypeScreen;

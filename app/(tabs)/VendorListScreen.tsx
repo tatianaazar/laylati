@@ -4,7 +4,7 @@ import TextFiltersComponent from '../../components/TextFiltersComponent';
 import axios from 'axios';
 
 const VendorListScreen = () => {
-  const [activeFilter, setActiveFilter] = useState('');
+  const [activeFilter, setActiveFilter] = useState('catering');
   const [vendors, setVendors] = useState([]);
 
   useEffect(() => {
@@ -15,8 +15,9 @@ const VendorListScreen = () => {
 
   const fetchVendorsByCategory = async (category) => {
     try {
-      const response = await axios.get(`http://192.168.1.133:3000/api/vendors/${category}`);
-      console.log('done');
+      console.log(`Fetching vendors for category: ${category}`);
+      const response = await axios.get(`http://192.168.0.3:3000/api/vendors/${category}`);
+      console.log('Vendors fetched:', response.data);
       setVendors(response.data);
     } catch (error) {
       console.error('Error fetching vendors:', error);
@@ -27,21 +28,23 @@ const VendorListScreen = () => {
     <View style={styles.container}>
       <TextFiltersComponent activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
       <ScrollView style={styles.vendorList}>
-        {vendors.map((vendor) => (
-          <View key={vendor._id} style={styles.vendorItem}>
-            <Image
-              source={{ uri: vendor.details?.image || 'default_image_url_here' }}
-              style={styles.vendorImage}
-            />
-            <Text style={styles.vendorName}>{vendor.name}</Text>
-            <Text style={styles.vendorDescription}>{vendor.details?.description || 'No description available'}</Text>
-            <Text>{vendor.details.address}</Text>
-            <Text>{vendor.details.phone}</Text>
-            <Text>{vendor.details.email}</Text>
-            <Text>{vendor.details.website}</Text>
-            <Text style={styles.vendorRating}>Rating: {vendor.rating}</Text>
-          </View>
-        ))}
+        {vendors.length > 0 ? (
+          vendors.map((vendor) => (
+            <View key={vendor._id} style={styles.vendorItem}>
+              <Image
+                source={{ uri: vendor.details?.image || 'default_image_url_here' }}
+                style={styles.vendorImage}
+              />
+              <View style={styles.vendorInfo}>
+                <Text style={styles.vendorName}>{vendor.name}</Text>
+                <Text style={styles.vendorDescription}>{vendor.details?.description || 'No description available'}</Text>
+                <Text style={styles.vendorRating}>Rating: {vendor.rating}</Text>
+              </View>
+            </View>
+          ))
+        ) : (
+          <Text>No vendors found.</Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -57,31 +60,41 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   vendorItem: {
+    flexDirection: 'row',
     padding: 16,
     marginBottom: 16,
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
+    alignItems: 'center',
   },
   vendorImage: {
-    width: '100%',
-    height: 200,
+    width: 100,
+    height: 100,
     borderRadius: 8,
-    marginBottom: 8,
+    marginRight: 16,
+  },
+  vendorInfo: {
+    flex: 1,
+    justifyContent: 'center',
   },
   vendorName: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Montserrat_700Bold',
+    marginBottom: 4,
   },
   vendorDescription: {
-    fontSize: 16,
-    marginVertical: 8,
+    fontSize: 14,
+    marginBottom: 4,
+    fontFamily: 'Montserrat_400Regular',
   },
   vendorRating: {
-    marginTop: 8,
-    fontSize: 16,
+    marginTop: 4,
+    fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: 'Montserrat_600SemiBold',
   },
 });
 

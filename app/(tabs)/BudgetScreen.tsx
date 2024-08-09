@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import CurrencyInput from 'react-native-currency-input';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const BudgetScreen = () => {
   const [budget, setBudget] = useState<number | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const navigation = useNavigation();
 
-  const handleSave = () => {
-    // Handle the save action
-    console.log('Budget saved:', budget);
+  const handleSave = async () => {
+    try {
+      await AsyncStorage.setItem('budget', JSON.stringify(budget));
+      console.log('Budget saved:', budget);
+      setIsSaved(true);
+      navigation.navigate('Main', { isBudgetSaved: true });
+    } catch (e) {
+      console.error('Failed to save the budget.', e);
+    }
   };
 
   return (
@@ -15,27 +25,34 @@ const BudgetScreen = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-
-      <CurrencyInput
-        value={budget}
-        onChangeValue={setBudget}
-        prefix="$"
-        delimiter=","
-        separator="."
-        precision={3}
-        style={styles.input}
-        placeholder="$0.000"
-        placeholderTextColor="black"
-      />
-      <Text style={styles.label}>Provide a budget</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.clearButton} onPress={() => setBudget(null)}>
-          <Text style={styles.clearButtonText}>Clear</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <CurrencyInput
+            value={budget}
+            onChangeValue={setBudget}
+            prefix="$"
+            delimiter=","
+            separator="."
+            precision={3}
+            style={styles.input}
+            placeholder="$0.000"
+            placeholderTextColor="black"
+          />
+          <Text style={styles.label}>Provide a total budget</Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.clearButton} onPress={() => setBudget(null)}>
+              <Text style={styles.clearButtonText}>Clear</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.saveButton, isSaved && styles.savedButton]}
+              onPress={handleSave}
+              disabled={budget === null}
+            >
+              <Text style={styles.saveButtonText}>{isSaved ? 'Saved!' : 'Save'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
@@ -43,15 +60,35 @@ const BudgetScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: 'white',
-    justifyContent: 'flex-start',
+  },
+  inner: {
+    flex: 1,
+    justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 16,
+    paddingTop: 50,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    width: '100%',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: 'black',
   },
   title: {
-    fontSize: 20,
+    flex: 1,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginVertical: 20,
+    textAlign: 'center',
+    color: 'black',
   },
   input: {
     fontSize: 48,
@@ -59,36 +96,47 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 10,
-    width: '90%',
+    width: 233, // 233px
+    height: 71, // 71px
     textAlign: 'center',
     marginVertical: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#F1F1F1', // background color
     color: 'black', // Ensures the input text is black
   },
   label: {
-    fontSize: 14,
-    color: 'gray',
-    marginBottom: 40,
+    width: 168,
+    height: 18,
+    fontFamily: 'Montserrat',
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 18.3,
+    textAlign: 'left',
+    color: '#000000',
+    marginBottom: 500,
+    alignSelf: 'center',
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 20,
+    marginBottom: 30,
   },
   clearButton: {
+    width: 144,
+    height: 36,
     backgroundColor: '#e0e0e0',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   saveButton: {
+    width: 144,
+    height: 36,
     backgroundColor: 'black',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   clearButtonText: {
     color: 'black',
@@ -97,6 +145,9 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontSize: 16,
+  },
+  savedButton: {
+    backgroundColor: '#35383F',
   },
 });
 

@@ -1,3 +1,21 @@
+
+import ChatsScreen from './ChatsScreen';
+import TabBarIcon from '../../components/TabBarIcon';
+
+import VendorIconActive from '../../assets/images/VendorActive.svg';
+import VendorIconInactive from '../../assets/images/VendorInactive.svg';
+import DashboardIconActive from '../../assets/images/DashboardActive.svg';
+import DashboardIconInactive from '../../assets/images/DashboardInactive.svg';
+import UpdatesIconActive from '../../assets/images/UpdatesActive.svg';
+import UpdatesIconInactive from '../../assets/images/UpdatesInactive.svg';
+import ChatsIconActive from '../../assets/images/ChatsActive.svg';
+import ChatsIconInactive from '../../assets/images/ChatsInactive.svg';
+import { SvgProps } from 'react-native-svg';
+import { useFonts, JosefinSans_400Regular, JosefinSans_600SemiBold, JosefinSans_700Bold } from '@expo-google-fonts/josefin-sans';
+import { Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_500Medium, Montserrat_700Bold } from '@expo-google-fonts/montserrat';
+import AppLoading from 'expo-app-loading';
+import { RootStackParamList } from './types/types';
+
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -10,39 +28,32 @@ import FilterScreen from './FilterScreen';
 import LocationScreen from './LocationScreen';
 import ShoppingCartScreen from './ShoppingCartScreen';
 import UpdatesScreen from './UpdatesScreen';
-import LocationDetailsScreen from './LocationDetailsScreen';
-import LocationNavigator from './LocationNavigator';
 import VendorListScreen from './VendorListScreen';
+import VendorDetailsScreen from './VendorDetailsScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+const Stack = createStackNavigator<RootStackParamList>();
 
 function Tabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName: React.ComponentProps<typeof FontAwesome>['name'];
+        tabBarIcon: ({ focused, color, size }) => {
+          let IconComponent: React.FC<SvgProps>;
           if (route.name === 'Vendors') {
-            iconName = 'shopping-cart';
+            IconComponent = focused ? VendorIconActive : VendorIconInactive;
           } else if (route.name === 'Dashboard') {
-            iconName = 'dashboard';
+            IconComponent = focused ? DashboardIconActive : DashboardIconInactive;
           } else if (route.name === 'Updates') {
-            iconName = 'bell';
-          } else {
-            iconName = 'circle';
+            IconComponent = focused ? UpdatesIconActive : UpdatesIconInactive;
+          } else if (route.name === 'Chats') {
+            IconComponent = focused ? ChatsIconActive : ChatsIconInactive;
           }
-          return <FontAwesome name={iconName} size={size} color={color} />;
+
+          return <TabBarIcon IconComponent={IconComponent} color={color} size={size} />;
         },
-        tabBarActiveTintColor: 'purple',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#580A88',
+        tabBarInactiveTintColor: '#35383F',
       })}
     >
       <Tab.Screen
@@ -60,11 +71,31 @@ function Tabs() {
         component={UpdatesScreen}
         options={{ headerShown: false }}
       />
+      <Tab.Screen
+        name="Chats"
+        component={ChatsScreen}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 }
 
 export default function Layout() {
+
+  const [fontsLoaded] = useFonts({
+    JosefinSans_400Regular,
+    JosefinSans_600SemiBold,
+    JosefinSans_700Bold,
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
   return (
     <Stack.Navigator initialRouteName="Main">
       <Stack.Screen
@@ -75,37 +106,49 @@ export default function Layout() {
       <Stack.Screen
         name="Budget"
         component={BudgetScreen}
-        options={{
-          title: ' ',
-          headerBackTitle: 'Total Budget',
-          headerBackTitleStyle: {
-            color: 'black',
+        options={({ route }) => ({
+          title: 'Total Budget',
+          headerStyle: {
+            backgroundColor: 'white',
+            borderBottomWidth: 0,
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          headerTintColor: 'black',
+          headerBackTitle: ' ',
+          headerTitleStyle: {
             fontSize: 18,
-            fontFamily: 'josefin sans',
+            fontFamily: 'Montserrat_500Medium',
             fontWeight: 'bold',
           },
-        }}
+          headerLeftContainerStyle: {
+            paddingLeft: 10,
+          },
+        })}
       />
+      
       <Stack.Screen
-        name="LocationStack"
-        component={LocationNavigator}
-        options={{
-          title: ' ',
-        }}
-      />
-      <Stack.Screen
-        name="Event Type"
+        name="EventType"
         component={EventTypeScreen}
-        options={{
-          title: ' ',
-          headerBackTitle: 'Event Type',
-          headerBackTitleStyle: {
-            color: 'black',
+        options={({ route }) => ({
+          title: 'Choose Your Event Type',
+          headerStyle: {
+            backgroundColor: 'white',
+            borderBottomWidth: 0,
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          headerTintColor: route.params?.isSaved ? 'green' : 'black',
+          headerBackTitle: ' ',
+          headerTitleStyle: {
             fontSize: 18,
-            fontFamily: 'josefin sans',
+            fontFamily: 'Montserrat_500Medium',
             fontWeight: 'bold',
           },
-        }}
+          headerLeftContainerStyle: {
+            paddingLeft: 10,
+          },
+        })}
       />
       <Stack.Screen
         name="Filter"
@@ -135,25 +178,13 @@ export default function Layout() {
           },
         }}
       />
+
+      
       <Stack.Screen
-        name="Location Details"
-        component={LocationDetailsScreen}
+        name="Location"
+        component={LocationScreen}
         options={{
-          title: ' ',
-          headerBackTitle: 'Your Cart',
-          headerBackTitleStyle: {
-            color: 'black',
-            fontSize: 18,
-            fontFamily: 'josefin sans',
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name="Vendor List"
-        component={VendorListScreen}
-        options={{
-          title: ' ',
+          title: 'Location',
           headerBackTitle: ' ',
           headerBackTitleStyle: {
             color: 'black',
@@ -163,6 +194,34 @@ export default function Layout() {
           },
         }}
       />
-    </Stack.Navigator>
+      <Stack.Screen
+        name="VendorList"
+        component={VendorListScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: ' ',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontWeight: 'bold',
+          },
+        }}
+      />
+    
+
+<Stack.Screen
+name="VendorDetails"
+component={VendorDetailsScreen}
+options={{
+  title: ' ',
+  headerBackTitle: ' ',
+  headerBackTitleStyle: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+}}
+/>
+</Stack.Navigator>
   );
 }
