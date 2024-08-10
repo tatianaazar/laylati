@@ -155,7 +155,8 @@ export default function Layout() {
         component={FilterScreen}
         options={{
           title: ' ',
-          headerBackTitle: 'Filters',
+          headerBackTitle: ' ',
+          headerTintColor: 'black',
           headerBackTitleStyle: {
             color: 'black',
             fontSize: 18,
@@ -168,8 +169,9 @@ export default function Layout() {
         name="ShoppingCart"
         component={ShoppingCartScreen}
         options={{
-          title: ' ',
-          headerBackTitle: 'Your Cart',
+          title: ' Your Cart',
+          headerTintColor: 'black',
+          headerBackTitle: ' ',
           headerBackTitleStyle: {
             color: 'black',
             fontSize: 18,

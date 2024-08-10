@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TextInput, ScrollView, Image, TouchableOpacity, Dimensions, FlatList } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { Card } from 'react-native-paper';
-import TextFiltersComponent from '../../components/TextFiltersComponent';
 import Carousel from 'react-native-reanimated-carousel';
 import axios from 'axios';
 import { RootStackParamList } from './types/types';
@@ -18,8 +15,9 @@ import BudgetIconSaved from '../../assets/images/dollar-square-saved.svg';
 import LocationIcon from '../../assets/images/location.svg';
 import FilterIcon from '../../assets/images/filter.svg';
 import ShoppingCartIcon from '../../assets/images/bag.svg';
+import TextFiltersComponent from '../../components/TextFiltersComponent';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const offers = [
   { image: 'https://www.infinity-weddingsandevents.com/wp-content/uploads/2020/01/luxury-tables-setting-lebanese-wedding.jpg' },
@@ -27,10 +25,12 @@ const offers = [
   { image: 'https://th.bing.com/th/id/OPEC.mPOLoikr2JOSQg474C474?w=200&h=220&rs=1&o=5&dpr=1.3&pid=21.1' },
 ];
 
+type MainScreenRouteProp = RouteProp<RootStackParamList, 'Main'>;
+
 const TabOneScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute<RouteProp<RootStackParamList, 'Main'>>();
-  const [activeFilter, setActiveFilter] = useState('featured'); // Initialize with a category if needed
+  const route = useRoute<MainScreenRouteProp>();
+  const [activeFilter, setActiveFilter] = useState(route.params?.activeFilter || 'featured'); // Initialize with a category if needed
   const [vendors, setVendors] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
   const carouselRef = useRef(null);
@@ -46,13 +46,19 @@ const TabOneScreen = () => {
   });
 
   useEffect(() => {
-    if (activeFilter && activeFilter !== 'featured' && activeFilter !== 'venues') {
+    if (activeFilter && activeFilter !== 'featured') {
       fetchVendorsByCategory(activeFilter);
     }
   }, [activeFilter]);
 
   useEffect(() => {
-    console.log('Params:', route.params);
+    if (route.params?.activeFilter) {
+      setActiveFilter(route.params.activeFilter);
+    }
+  }, [route.params?.activeFilter]);
+  
+
+  useEffect(() => {
     if (route.params?.isEventTypeSaved !== undefined) {
       setIsEventTypeSaved(route.params.isEventTypeSaved);
     }
@@ -63,9 +69,7 @@ const TabOneScreen = () => {
 
   const fetchVendorsByCategory = async (category) => {
     try {
-      console.log(`Fetching vendors for category: ${category}`);
-      const response = await axios.get(`http://192.168.0.3:3000/api/vendors/${category}`);
-      console.log("Response:", response.data);
+      const response = await axios.get(`https://layalti-9ac513681495.herokuapp.com/api/vendors/${category}`); // Replace with your API endpoint
       setVendors(response.data);
     } catch (error) {
       console.error('Error fetching vendors:', error.response ? error.response.data : error.message);
@@ -76,9 +80,37 @@ const TabOneScreen = () => {
     <Image source={{ uri: item.image }} style={styles.offerImage} />
   );
 
+  const renderVenueItem = ({ item }) => (
+    <View style={styles.venueContainer}>
+      <Image source={{ uri: item.details?.image }} style={styles.venueImage} />
+      <View style={styles.venueInfo}>
+        <Text style={styles.venueName}>{item.name}</Text>
+        <Text style={styles.venueDescription}>{item.details?.description}</Text>
+        <Text style={styles.venueRating}>Rating: {item.rating}</Text>
+      </View>
+    </View>
+  );
+
+  const renderVendorItem = ({ item }) => (
+    <TouchableOpacity key={item._id} onPress={() => navigateToDetails(item)}>
+      <View style={styles.vendorItem}>
+        <Image source={{ uri: item.details?.image }} style={styles.vendorImage} />
+        <View style={styles.vendorInfo}>
+          <Text style={styles.vendorName}>{item.name}</Text>
+          <Text style={styles.vendorDescription}>{item.details?.description}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
   const navigateToDetails = (vendor) => {
     navigation.navigate('VendorDetails', { vendor });
   };
+
+  const navigateToFilter = () => {
+    navigation.navigate('Filter', { activeFilter });
+  };
+  
 
   if (!fontsLoaded) {
     return <AppLoading />;
@@ -86,10 +118,10 @@ const TabOneScreen = () => {
 
   return (
     <View style={styles.container}>
-      {activeFilter !== 'featured' && activeFilter !== 'venues' && (
+      {(activeFilter !== 'featured') && (
         <View style={styles.fixedFilterBar2}>
           <View style={styles.iconContainer2}>
-            <TouchableOpacity style={styles.icon2} onPress={() => navigation.navigate('Filter')}>
+            <TouchableOpacity style={styles.icon2} onPress={navigateToFilter}>
               <FilterIcon width={24} height={24} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.icon2} onPress={() => navigation.navigate('ShoppingCart')}>
@@ -102,144 +134,138 @@ const TabOneScreen = () => {
           />
         </View>
       )}
-      <ScrollView>
-        <View style={styles.header}>
-          {(activeFilter === 'featured' || activeFilter === 'venues') && (
-            <>
-              <Text style={styles.title}>LAYLATI</Text>
-              <View style={styles.searchWrapper}>
-                <View style={styles.searchContainer}>
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search"
-                    placeholderTextColor="#79747E"
-                  />
-                </View>
-                <SearchIcon width={30} height={32} style={styles.searchIcon} />
+
+{activeFilter === 'venues' && (
+        <FlatList
+          data={vendors}
+          renderItem={renderVenueItem}
+          keyExtractor={(item) => item._id}
+          pagingEnabled
+          showsVerticalScrollIndicator={false}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          snapToInterval={screenHeight - 80} // Adjust for header and footer
+          contentContainerStyle={{ paddingTop: activeFilter === 'venues' ? 110 : 0 }} // Adjust the padding
+        />
+      )}
+
+      {activeFilter !== 'venues' && activeFilter !== 'featured' && (
+        <FlatList
+          data={vendors}
+          renderItem={renderVendorItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={{ paddingTop: 130 }} // Add padding to push the content down
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {activeFilter === 'featured' && (
+        <ScrollView>
+          <View style={styles.header}>
+            <Text style={styles.title}>LAYLATI</Text>
+            <View style={styles.searchWrapper}>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor="#79747E"
+                />
               </View>
-              <View style={styles.createEventContainer}>
-                <Text style={styles.createEventTitle}>Create Event</Text>
-                <View style={styles.iconsRow}>
-                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('EventType')}>
-                    {isEventTypeSaved ? <EventTypeIconSaved width={30} height={30} /> : <EventTypeIcon width={30} height={30} />}
-                    <Text style={styles.iconLabel}>Event Type</Text>
-                  </TouchableOpacity>
-                  <View style={styles.separator} />
-                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Budget')}>
-                    {isBudgetSaved ? <BudgetIconSaved width={30} height={30} /> : <BudgetIcon width={30} height={30} />}
-                    <Text style={styles.iconLabel}>Budget</Text>
-                  </TouchableOpacity>
-                  <View style={styles.separator} />
-                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Location')}>
-                    <LocationIcon width={30} height={30} />
-                    <Text style={styles.iconLabel}>Location</Text>
-                  </TouchableOpacity>
-                </View>
+              <SearchIcon width={30} height={32} style={styles.searchIcon} />
+            </View>
+            <View style={styles.createEventContainer}>
+              <Text style={styles.createEventTitle}>Create Event</Text>
+              <View style={styles.iconsRow}>
+                <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('EventType')}>
+                  {isEventTypeSaved ? <EventTypeIconSaved width={30} height={30} /> : <EventTypeIcon width={30} height={30} />}
+                  <Text style={styles.iconLabel}>Event Type</Text>
+                </TouchableOpacity>
+                <View style={styles.separator} />
+                <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Budget')}>
+                  {isBudgetSaved ? <BudgetIconSaved width={30} height={30} /> : <BudgetIcon width={30} height={30} />}
+                  <Text style={styles.iconLabel}>Budget</Text>
+                </TouchableOpacity>
+                <View style={styles.separator} />
+                <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Location')}>
+                  <LocationIcon width={30} height={30} />
+                  <Text style={styles.iconLabel}>Location</Text>
+                </TouchableOpacity>
               </View>
-              <TextFiltersComponent
-                activeFilter={activeFilter}
-                setActiveFilter={setActiveFilter}
-              />
-              <View style={styles.horizontalLine} />
-            </>
-          )}
-          {(activeFilter !== 'featured' && activeFilter !== 'venues') && (
-            <>
-              <ScrollView>
-      {vendors.map((vendor) => (
-        <TouchableOpacity key={vendor._id} onPress={() => navigateToDetails(vendor)}>
-          <View style={styles.vendorItem}>
-            <Image source={{ uri: vendor.details?.image }} style={styles.vendorImage} />
-            <View style={styles.vendorInfo}>
-              <Text style={styles.vendorName}>{vendor.name}</Text>
-              <Text style={styles.vendorDescription}>{vendor.details?.description}</Text>
+            </View>
+            <TextFiltersComponent
+              activeFilter={activeFilter}
+              setActiveFilter={setActiveFilter}
+            />
+            <View style={styles.horizontalLine} />
+          </View>
+          <View style={styles.carouselSection}>
+            <Text style={styles.carouselTitle}>Curated Packages</Text>
+            <Carousel
+              ref={carouselRef}
+              data={offers}
+              renderItem={renderItem}
+              width={screenWidth}
+              height={150}
+              onSnapToItem={(index) => setActiveSlide(index)}
+            />
+            <View style={styles.paginationContainer}>
+              {offers.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    activeSlide === index && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
             </View>
           </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-            </>
-          )}
-
-          {activeFilter === 'featured' && (
-            <View>
-              <View style={styles.carouselSection}>
-                <Text style={styles.carouselTitle}>Curated Packages</Text>
-                <Carousel
-                  ref={carouselRef}
-                  data={offers}
-                  renderItem={renderItem}
-                  width={screenWidth}
-                  height={150}
-                  onSnapToItem={(index) => setActiveSlide(index)}
+          <View style={styles.carouselSection}>
+            <Text style={styles.carouselTitle}>Featured Catering</Text>
+            <Carousel
+              ref={carouselRef}
+              data={offers}
+              renderItem={renderItem}
+              width={screenWidth}
+              height={150}
+              onSnapToItem={(index) => setActiveSlide(index)}
+            />
+            <View style={styles.paginationContainer}>
+              {offers.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    activeSlide === index && styles.paginationDotActive,
+                  ]}
                 />
-                <View style={styles.paginationContainer}>
-                  {offers.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.paginationDot,
-                        activeSlide === index && styles.paginationDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.carouselSection}>
-                <Text style={styles.carouselTitle}>Featured Catering</Text>
-                <Carousel
-                  ref={carouselRef}
-                  data={offers}
-                  renderItem={renderItem}
-                  width={screenWidth}
-                  height={150}
-                  onSnapToItem={(index) => setActiveSlide(index)}
-                />
-                <View style={styles.paginationContainer}>
-                  {offers.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.paginationDot,
-                        activeSlide === index && styles.paginationDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.carouselSection}>
-                <Text style={styles.carouselTitle}>Featured Venues</Text>
-                <Carousel
-                  ref={carouselRef}
-                  data={offers}
-                  renderItem={renderItem}
-                  width={screenWidth}
-                  height={150}
-                  onSnapToItem={(index) => setActiveSlide(index)}
-                />
-                <View style={styles.paginationContainer}>
-                  {offers.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.paginationDot,
-                        activeSlide === index && styles.paginationDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
+              ))}
             </View>
-          )}
-
-          {activeFilter === 'venues' && (
-            <View>
-              {/* Implement the custom logic for the Venues category here */}
-              <Text style={styles.customVenuesText}>Custom content for Venues category</Text>
+          </View>
+          <View style={styles.carouselSection}>
+            <Text style={styles.carouselTitle}>Featured Venues</Text>
+            <Carousel
+              ref={carouselRef}
+              data={offers}
+              renderItem={renderItem}
+              width={screenWidth}
+              height={150}
+              onSnapToItem={(index) => setActiveSlide(index)}
+            />
+            <View style={styles.paginationContainer}>
+              {offers.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    activeSlide === index && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
             </View>
-          )}
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -249,27 +275,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  fixedFilterBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    backgroundColor: 'white',
-  },
   fixedFilterBar2: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1,
-    flexDirection: 'column', // Change to column to stack items vertically
+    flexDirection: 'column', // Stack items vertically
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -277,38 +289,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     backgroundColor: 'white',
   },
-  iconContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    width: '22%',
-  },
-  topIconsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginVertical: 16,
-  },
-  icon: {
-    paddingHorizontal: 10,
-    marginTop: 30,
-  },
   iconContainer2: {
     flexDirection: 'row', // Ensure icons are aligned horizontally
     justifyContent: 'space-between', // Ensure the icons are spaced correctly
     alignItems: 'center',
-    width: '100%', // Adjust as needed, previously 100% which hid the TextFiltersComponent
+    width: '100%',
     paddingHorizontal: 10,
     marginTop: 20,
-  },
-  icon2: {
-    paddingHorizontal: 10,
-    marginTop: 0,
-  },
-  topIcon: {
-    paddingHorizontal: 10,
   },
   header: {
     padding: 16,
@@ -362,6 +349,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  iconContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '22%',
+  },
   iconLabel: {
     marginTop: 8,
     fontSize: 10,
@@ -393,9 +387,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat_400Regular',
   },
   offerImage: {
-    width: screenWidth - 32, // Adjust the width to fit the screen with some padding
+    width: screenWidth - 28, // Adjust the width to fit the screen with some padding
     height: 118,
     borderRadius: 8,
+    alignSelf: 'center',
   },
   paginationContainer: {
     flexDirection: 'row',
@@ -412,14 +407,6 @@ const styles = StyleSheet.create({
   },
   paginationDotActive: {
     backgroundColor: '#FF5719',
-  },
-  card: {
-    borderRadius: 8,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  vendorList: {
-    marginTop: 16,
   },
   vendorItem: {
     flexDirection: 'row',
@@ -457,11 +444,52 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Montserrat_600SemiBold',
   },
-  customVenuesText: {
+  vendorContainer: {
+    width: screenWidth,
+    height: screenHeight - 80, // Adjust for header and footer
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  venueContainer: {
+    width: screenWidth,
+    height: screenHeight - 80, // Adjust for header and footer
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  venueImage: {
+    width: screenWidth - 32,
+    height: 450,
+    borderRadius: 16,
+    
+  },
+  venueInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: 0,
+    marginTop: -120
+  },
+  venueName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    fontFamily: 'Montserrat_700Bold',
+    marginBottom: 4,
+    color: 'black',
+  },
+  venueDescription: {
+    fontSize: 12,
+    marginBottom: 4,
+    fontFamily: 'Montserrat_400Regular',
+    color: '#555',
+  },
+  venueRating: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 16,
+    fontFamily: 'Montserrat_600SemiBold',
+    color: 'black',
   },
 });
 

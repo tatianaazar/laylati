@@ -1,58 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { View, TouchableOpacity, Text, StyleSheet, Modal } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
 
-type StarRatingOption = {
-  label: string;
-  value: string;
-  key: number;
-};
+const StarRatingPicker = ({ selectedValue, onValueChange }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
 
-const starRatingOptions: StarRatingOption[] = [
-  { label: '1 Star', value: '1', key: 1 },
-  { label: '2 Stars', value: '2', key: 2 },
-  { label: '3 Stars', value: '3', key: 3 },
-  { label: '4 Stars', value: '4', key: 4 },
-  { label: '5 Stars', value: '5', key: 5 },
-];
+  const handlePress = () => {
+    setIsOpen(true);
+  };
 
-const StarRatingPicker = ({ selectedValue, onValueChange }: { selectedValue: string | null, onValueChange: (value: string) => void }) => {
-  const [modalVisible, setModalVisible] = React.useState(false);
-
-  const handleSelect = (value: string) => {
+  const handleSelect = (value) => {
     onValueChange(value);
-    setModalVisible(false);
+    setIsOpen(false);
   };
 
   return (
-    <View>
-      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.filterDropdown}>
-        <Text style={styles.filterDropdownText}>
-          {selectedValue ? `${selectedValue} Star${selectedValue > '1' ? 's' : ''}` : 'Choose Star Rating'}
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.inputContainer} onPress={handlePress}>
+        <Text style={styles.inputText}>
+          {selectedValue ? `${selectedValue} Stars` : 'Choose Star Rating'}
         </Text>
-        <FontAwesome name="caret-down" size={16} color="black" />
+        <AntDesign name="down" size={16} color="black" />
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <FlatList
-              data={starRatingOptions}
-              keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleSelect(item.value)} style={styles.starRatingOption}>
-                  <Text>{item.label}</Text>
-                  <View style={styles.starsContainer}>
-                    {[...Array(item.key)].map((_, index) => (
-                      <FontAwesome key={index} name="star" size={16} color="orange" />
-                    ))}
-                    {[...Array(5 - item.key)].map((_, index) => (
-                      <FontAwesome key={index} name="star" size={16} color="gray" />
-                    ))}
-                  </View>
-                </TouchableOpacity>
-              )}
-            />
+      {/* Star Rating Modal */}
+      <Modal
+        transparent={true}
+        visible={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            {['1', '2', '3', '4', '5'].map((star) => (
+              <TouchableOpacity
+                key={star}
+                style={styles.modalItem}
+                onPress={() => handleSelect(star)}
+              >
+                <Text style={styles.modalText}>{star} Stars</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       </Modal>
@@ -61,41 +48,48 @@ const StarRatingPicker = ({ selectedValue, onValueChange }: { selectedValue: str
 };
 
 const styles = StyleSheet.create({
-  filterDropdown: {
+  container: {
+    width: '100%', // Ensure it takes full width
+  },
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    borderRadius: 25, // Rounded edges
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    height: 50, // Adjust height to match other inputs
   },
-  filterDropdownText: {
+  inputText: {
     fontSize: 16,
+    color: '#555',
   },
-  modalContainer: {
+  modalBackground: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 8,
-    padding: 16,
-  },
-  starRatingOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  starsContainer: {
-    flexDirection: 'row',
-    marginLeft: 8,
+  modalContainer: {
+    width: 300,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalItem: {
+    paddingVertical: 10,
+  },
+  modalText: {
+    fontSize: 18,
+    textAlign: 'center',
   },
 });
 

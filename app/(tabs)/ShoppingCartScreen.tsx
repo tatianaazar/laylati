@@ -25,8 +25,6 @@ const ShoppingCartScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Cart</Text>
-      <Text style={styles.subtitle}>Batoul's Wedding Batroun</Text>
       <FlatList
         data={cartItems}
         renderItem={renderItem}
