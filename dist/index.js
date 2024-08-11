@@ -22,6 +22,7 @@ app.use(express_1.default.json());
 (0, database_1.default)();
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/vendors', vendorRoutes_1.default);
+app.get('/', (req, res) => res.send('Server is running!'));
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
