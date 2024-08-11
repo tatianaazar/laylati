@@ -31,6 +31,8 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/vendors', vendorRoutes);
 
+app.get('/', (req, res) => res.send('Server is running!'));
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
