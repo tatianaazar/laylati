@@ -7,6 +7,8 @@ import userRoutes from './routes/userRoutes';
 import vendorRoutes from './routes/vendorRoutes';
 import User from './models/userModel';
 import cors from 'cors';
+import 'dotenv/config';
+
 
 
 

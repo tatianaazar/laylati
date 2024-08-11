@@ -1,5 +1,4 @@
 "use strict";
-// src/database.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -16,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield mongoose_1.default.connect('mongodb+srv://tatianaazar:Juliette02%21@laylatidb.s7gnwt5.mongodb.net/?retryWrites=true&w=majority&appName=LaylatiDB');
+        const mongoURI = process.env.MONGODB_URI || '';
+        yield mongoose_1.default.connect(mongoURI);
         console.log('MongoDB connected');
     }
     catch (err) {
@@ -24,7 +24,7 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
             console.error(err.message);
         }
         else {
-            console.error('An unknown error occured.');
+            console.error('An unknown error occurred.');
         }
         process.exit(1);
     }

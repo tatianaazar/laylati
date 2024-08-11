@@ -9,6 +9,7 @@ const database_1 = __importDefault(require("./database"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const vendorRoutes_1 = __importDefault(require("./routes/vendorRoutes"));
 const cors_1 = __importDefault(require("cors"));
+require("dotenv/config");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 //app.use(cors());
