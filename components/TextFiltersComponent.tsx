@@ -10,7 +10,7 @@ type Props = {
   setActiveFilter: (filter: string) => void;
 };
 
-const textFilters = ['Featured', 'Venues', 'Catering', 'Entertainment', 'Decor', 'Photo/Videography'];
+const textFilters = ['Featured', 'Venues', 'Catering', 'Entertainment', 'Decor', 'Photography'];
 
 const TextFiltersComponent: React.FC<Props> = ({ activeFilter, setActiveFilter }) => {
   const [fontsLoaded] = useFonts({

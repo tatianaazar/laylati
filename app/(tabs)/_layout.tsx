@@ -217,6 +217,13 @@ component={VendorDetailsScreen}
 options={{
   title: ' ',
   headerBackTitle: ' ',
+  headerStyle: {
+    backgroundColor: 'white',
+    borderBottomWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  headerTintColor: 'black',
   headerBackTitleStyle: {
     color: 'black',
     fontSize: 18,

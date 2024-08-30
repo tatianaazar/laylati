@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Carousel from 'react-native-reanimated-carousel';
 import PackageIcon from '../../assets/images/packageBagTick.svg';
-import ChatIcon from '../../assets/images/chatVendor.svg';
+import ChatIcon from '../../assets/images/chatVendorPurple.svg';
 import BagIcon from '../../assets/images/bag.svg';
 
 
@@ -26,7 +26,10 @@ const VendorDetailsScreen = () => {
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity style={styles.bagIconContainer}>
+        <TouchableOpacity
+          style={styles.bagIconContainer}
+          onPress={() => navigation.navigate('ShoppingCart')}
+        >
           <BagIcon width={24} height={24} />
         </TouchableOpacity>
       ),
@@ -37,7 +40,7 @@ const VendorDetailsScreen = () => {
     <Image source={{ uri: item }} style={styles.carouselImage} />
   );
 
-  const renderPagination = () => {
+ /* const renderPagination = () => {
     return (
       <View style={styles.paginationContainer}>
         {images.map((_, index) => (
@@ -51,7 +54,7 @@ const VendorDetailsScreen = () => {
         ))}
       </View>
     );
-  };
+  };    */
 
   return (
     <View style={styles.container}>
@@ -67,7 +70,7 @@ const VendorDetailsScreen = () => {
             loop
             onSnapToItem={(index) => setActiveSlide(index)}
           />
-          {renderPagination()}
+        
         </View>
 
         <View style={styles.infoContainer}>
@@ -109,11 +112,12 @@ const styles = StyleSheet.create({
     },
     vendorName: {
       fontSize: 24,
-      fontWeight: 'bold',
+      fontWeight: '500',
+      fontFamily: 'Montserrat',
       color: '#000',
-      marginBottom: 8,
+      marginBottom: 14,
       textAlign: 'center',
-      marginTop: 16,
+      marginTop: -4,
     },
     carouselContainer: {
       marginBottom: 16,
@@ -162,10 +166,27 @@ const styles = StyleSheet.create({
       fontWeight: '400',
       lineHeight: 17.08,
       textAlign: 'left',
-      marginTop: 16,
-      marginBottom: 16,
+      marginTop: 4,
+      marginBottom: 20,
     },
     packageButton: {
+      width: '100%',
+      height: 32,
+      borderRadius: 6,
+      backgroundColor: '#F0F0F0',
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      marginBottom: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      shadowColor: '#000', // Shadow color
+      shadowOffset: { width: 0, height: 2 }, // Shadow offset
+      shadowOpacity: 0.3, // Shadow opacity
+      shadowRadius: 4, // Shadow radius for a softer shadow
+      elevation: 3, // Adds a shadow effect on Android
+    },
+    chatButton: {
       width: '100%',
       height: 32,
       borderRadius: 6,
@@ -176,23 +197,17 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-    },
-    chatButton: {
-      width: '100%',
-      height: 32,
-      borderRadius: 6,
-      backgroundColor: '#FFD700',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      marginBottom: 8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      shadowColor: '#000', // Shadow color
+      shadowOffset: { width: 0, height: 2 }, // Shadow offset
+      shadowOpacity: 0.3, // Shadow opacity
+      shadowRadius: 4, // Shadow radius for a softer shadow
+      elevation: 3, // Adds a shadow effect on Android
     },
     buttonText: {
       fontSize: 14,
       fontWeight: '400',
       color: '#000',
+      fontFamily: 'Montserrat',
     },
     packageIcon: {
       position: 'absolute',

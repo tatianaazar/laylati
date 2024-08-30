@@ -89,12 +89,11 @@ const styles = StyleSheet.create({
     color: 'gray',
     textAlign: 'center',
     opacity: 0.6, // Matches the faded appearance in the image
-    width: 240,
+    width: 276,
     height: 72,
     fontFamily: 'Montserrat',
     fontWeight: '400',
     lineHeight: 24.4,
-    marginTop: -500
   },
   listContent: {
     paddingHorizontal: 16,

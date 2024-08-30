@@ -186,19 +186,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   message: {
-    width: 250,
-    height: 100,
-    position: 'absolute',
-    top: 80,
-    left: 50,
-    gap: 0,
-    opacity: 1, // Set to 1 so the text is visible
+    width: 276,
+    height: 72,
     fontFamily: 'Montserrat', // Ensure you have Montserrat font loaded in your project
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '400',
     lineHeight: 24.4,
     textAlign: 'center',
-    color: '#A1A1A1', // Ensure the text color is set to black or the desired color
+    opacity: 0.6,
+    color: 'gray', // Ensure the text color is set to black or the desired color
   },
   
   fab: {

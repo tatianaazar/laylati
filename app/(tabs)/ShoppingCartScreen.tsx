@@ -6,31 +6,27 @@ interface CartItem {
   name: string;
 }
 
-const cartItems: CartItem[] = [
-  { id: '1', name: 'AL-BAIK' },
-  { id: '2', name: 'GRAND OASIS HALL' },
-  { id: '3', name: 'ENCHANTED EVENTS' },
-  { id: '4', name: 'PALM GARDEN ESTATE' },
-];
+const cartItems: CartItem[] = []; // Empty array to simulate an empty cart
 
 const ShoppingCartScreen = () => {
-  const renderItem = ({ item }: { item: CartItem }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemText}>{item.name}</Text>
-      <TouchableOpacity style={styles.checkbox}>
-        <Text style={styles.checkboxText}>O</Text>
-      </TouchableOpacity>
+  const renderEmptyCartMessage = () => (
+    <View style={styles.emptyCartContainer}>
+      <Text style={styles.emptyCartText}>Oops, it looks like your cart is empty</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={cartItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-      />
+      {cartItems.length === 0 ? (
+        renderEmptyCartMessage()
+      ) : (
+        <FlatList
+          data={cartItems}
+          renderItem={() => null} // Do not render item names
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+        />
+      )}
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Request Services</Text>
       </TouchableOpacity>
@@ -44,41 +40,21 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
   list: {
     flex: 1,
   },
-  itemContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  itemText: {
-    fontSize: 18,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  emptyCartContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkboxText: {
-    fontSize: 18,
-    color: '#ddd',
+  emptyCartText: {
+    fontSize: 20,
+    color: 'gray',
+    textAlign: 'center',
+    fontFamily: 'Montserrat',
+    opacity: 0.6,
+    marginTop: -60
   },
   button: {
     backgroundColor: 'black',
