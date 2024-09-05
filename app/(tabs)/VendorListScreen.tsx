@@ -16,7 +16,7 @@ const VendorListScreen = () => {
   const fetchVendorsByCategory = async (category) => {
     try {
       console.log(`Fetching vendors for category: ${category}`);
-      const response = await axios.get(`https://powerful-wave-76932-d627c476e9a0.herokuapp.com/api/vendors/${category}`);
+      const response = await axios.get(`http://192.168.1.250:5000/api/vendors/${category}`);
       console.log('Vendors fetched:', response.data);
       setVendors(response.data);
     } catch (error) {

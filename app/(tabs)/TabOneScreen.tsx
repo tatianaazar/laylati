@@ -63,6 +63,8 @@ const TabOneScreen = () => {
   const route = useRoute<MainScreenRouteProp>();
   const [activeFilter, setActiveFilter] = useState(route.params?.activeFilter || 'featured'); // Initialize with a category if needed
   const [vendors, setVendors] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredVendors, setFilteredVendors] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
   const [activeSlide2, setActiveSlide2] = useState(0);
   const [activeSlide3, setActiveSlide3] = useState(0);
@@ -86,6 +88,39 @@ const TabOneScreen = () => {
     Montserrat_700Bold,
   });
 
+  // Fetch all vendors once when the screen loads
+  useEffect(() => {
+    const fetchAllVendors = async () => {
+      try {
+        const response = await axios.get(`http://192.168.1.250:5000/api/vendors`);
+        setVendors(response.data); // Set original vendors
+        setFilteredVendors(response.data); // Initially, filtered vendors will be the same as original vendors
+      } catch (error) {
+        console.error('Error fetching vendors:', error);
+      }
+    };
+    fetchAllVendors();
+  }, []);
+
+  const fetchVendors = async (query) => {
+    console.log('Sending request with query:', query);  // Log the query being sent
+    try {
+      const response = await axios.get(`http://192.168.1.250:5000/api/vendors?searchQuery=${query}`);
+      console.log('Response received:', response.data);  // Log the response
+      setFilteredVendors(response.data);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);  // Log the error
+    }
+  };
+
+   // Assuming you have a useEffect to trigger the search function
+useEffect(() => {
+  if (searchQuery) {
+    fetchVendors(searchQuery);
+  } else {
+    setFilteredVendors(vendors);  // Show all vendors if no query
+  }
+}, [searchQuery]);
 
   useEffect(() => {
     if (activeFilter && activeFilter !== 'featured') {
@@ -111,7 +146,7 @@ const TabOneScreen = () => {
 
   const fetchVendorsByCategory = async (category) => {
     try {
-      const response = await axios.get(`https://powerful-wave-76932-d627c476e9a0.herokuapp.com/api/vendors/${category}`); // Replace with your API endpoint
+      const response = await axios.get(`http://192.168.1.250:5000/api/vendors/${category}`); // Replace with your API endpoint
       setVendors(response.data);
     } catch (error) {
       console.error('Error fetching vendors:', error.response ? error.response.data : error.message);
@@ -228,10 +263,24 @@ const TabOneScreen = () => {
                   style={styles.searchInput}
                   placeholder="Search"
                   placeholderTextColor="#79747E"
+                  onChangeText={(text) => setSearchQuery(text)}
                 />
               </View>
               <SearchIcon width={30} height={32} style={styles.searchIcon} />
             </View>
+
+          {  /* If there is a search query, show the filtered vendors */}
+          {searchQuery ? (
+            <FlatList
+              data={filteredVendors}  // Display filtered vendors
+              renderItem={renderVendorItem}  // Use your custom render function for vendors
+              keyExtractor={(item) => item._id}  // Ensure unique key
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <>
+              {/* Regular carousels when no search query */}
+
             <View style={styles.createEventContainer}>
               <Text style={styles.createEventTitle}>Create Event</Text>
               <View style={styles.iconsRow}>
@@ -256,8 +305,10 @@ const TabOneScreen = () => {
               setActiveFilter={setActiveFilter}
             />
             <View style={styles.horizontalLine} />
+            
+            </>
+          )}
           </View>
-
 
           <View style={styles.carouselSection}>
             <Text style={styles.carouselTitle}>Curated Packages</Text>
@@ -288,7 +339,7 @@ const TabOneScreen = () => {
           <View style={styles.carouselSection}>
             <Text style={styles.carouselTitle}>Featured Catering</Text>
             <Carousel
-              ref={carouselRef}
+              ref={carouselRef3}
               data={offers3}
               renderItem={renderItem}
               width={screenWidth}
@@ -301,7 +352,7 @@ const TabOneScreen = () => {
           <View style={styles.carouselSection}>
             <Text style={styles.carouselTitle}>Featured Entertainment</Text>
             <Carousel
-              ref={carouselRef}
+              ref={carouselRef4}
               data={offers4}
               renderItem={renderItem}
               width={screenWidth}
@@ -314,7 +365,7 @@ const TabOneScreen = () => {
           <View style={styles.carouselSection}>
             <Text style={styles.carouselTitle}>Featured Decor</Text>
             <Carousel
-              ref={carouselRef}
+              ref={carouselRef5}
               data={offers5}
               renderItem={renderItem}
               width={screenWidth}
@@ -327,7 +378,7 @@ const TabOneScreen = () => {
           <View style={styles.carouselSection}>
             <Text style={styles.carouselTitle}>Featured Photography</Text>
             <Carousel
-              ref={carouselRef}
+              ref={carouselRef6}
               data={offers6}
               renderItem={renderItem}
               width={screenWidth}

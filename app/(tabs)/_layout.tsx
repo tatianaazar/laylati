@@ -30,6 +30,11 @@ import ShoppingCartScreen from './ShoppingCartScreen';
 import UpdatesScreen from './UpdatesScreen';
 import VendorListScreen from './VendorListScreen';
 import VendorDetailsScreen from './VendorDetailsScreen';
+import SplashScreen from './SplashScreen';
+import LoginScreen from './LoginScreen';
+//import { SplashScreen } from 'expo-router';
+import SignUpScreen from './SignUpScreen';
+import SearchScreen from './SearchScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -97,7 +102,70 @@ export default function Layout() {
   }
 
   return (
-    <Stack.Navigator initialRouteName="Main">
+    <Stack.Navigator initialRouteName="Splash">
+      <Stack.Screen
+        name="Splash"
+        component={SplashScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: ' ',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontWeight: 'bold',
+          },
+          headerStyle: {
+            backgroundColor: 'white',
+            borderBottomWidth: 0,
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        }}
+      />
+
+<Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: ' ',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontWeight: 'bold',
+          },
+          headerStyle: {
+            backgroundColor: 'white',
+            borderBottomWidth: 0,
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+        }}
+      />
+
+<Stack.Screen
+        name="SignUp"
+        component={SignUpScreen}
+        options={{
+          title: ' ',
+          headerBackTitle: ' ',
+          headerBackTitleStyle: {
+            color: 'black',
+            fontSize: 18,
+            fontWeight: 'bold',
+          },
+          headerStyle: {
+            backgroundColor: 'white',
+            borderBottomWidth: 0,
+            shadowOpacity: 0,
+            elevation: 0,
+          },
+          headerLeftContainerStyle: {
+            paddingLeft: 10,
+          },
+        }}
+      />
+
       <Stack.Screen
         name="Main"
         component={Tabs}
@@ -231,6 +299,32 @@ options={{
   },
 }}
 />
+
+
+<Stack.Screen
+name="Search"
+component={SearchScreen}
+options={{
+  title: ' ',
+  headerBackTitle: ' ',
+  headerStyle: {
+    backgroundColor: 'white',
+    borderBottomWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  headerTintColor: 'black',
+  headerBackTitleStyle: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+}}
+/>
+
+
+
+
 </Stack.Navigator>
   );
 }
