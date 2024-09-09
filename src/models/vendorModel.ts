@@ -27,8 +27,13 @@ const VendorSchema: Schema = new Schema({
   },
 });
 
-
+// Create a text index on multiple fields
+VendorSchema.index({ 
+  name: 'text', 
+  category: 'text', 
+  description: 'text', 
+  'details.address': 'text' 
+});
 
 const Vendor = mongoose.model<IVendor>('Vendor', VendorSchema);
 export default Vendor;
-

@@ -13,22 +13,47 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const vendorModel_1 = __importDefault(require("../models/vendorModel"));
+const vendorModel_1 = __importDefault(require("../models/vendorModel")); // Assuming this is your vendor model
 const router = (0, express_1.Router)();
+// Route for search query
+router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('GET /vendors - Query params:', req.query); // This should print
+    try {
+        const searchQuery = req.query.searchQuery ? String(req.query.searchQuery) : '';
+        let vendors;
+        if (searchQuery) {
+            console.log(`Searching for vendors with query: ${searchQuery}`);
+            const searchRegex = new RegExp(searchQuery, 'i'); // 'i' for case-insensitive search
+            vendors = yield vendorModel_1.default.find({
+                $or: [
+                    { name: searchRegex },
+                    { category: searchRegex },
+                    { description: searchRegex },
+                ]
+            });
+        }
+        else {
+            vendors = yield vendorModel_1.default.find();
+        }
+        res.status(200).json(vendors);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error fetching vendors', error });
+    }
+}));
+// Route for fetching vendors by category
 router.get('/:category', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`Incoming category request: ${req.params.category}`);
     const category = req.params.category;
-    console.log(`Incoming category request: ${category}`);
     try {
         const vendors = yield vendorModel_1.default.find({ category });
         if (!vendors.length) {
-            console.log(`No vendors found for category: ${category}`);
             return res.status(404).json({ message: `No vendors found for category ${category}` });
         }
-        res.status(200).json(vendors); // Send the response, including the image URLs
+        res.status(200).json(vendors);
     }
     catch (error) {
-        console.error('Error fetching vendors:', error);
-        res.status(500).json({ message: 'Internal Server Error', error });
+        res.status(500).json({ message: 'Error fetching vendors', error });
     }
 }));
 exports.default = router;

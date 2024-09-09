@@ -23,27 +23,46 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// src/models/Vendor.ts
 const mongoose_1 = __importStar(require("mongoose"));
-const VendorSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    category: { type: String, required: true },
-    rating: { type: Number, required: true },
-    description: { type: String, required: true },
-    details: {
-        address: String,
-        phone: String,
-        email: String,
-        website: String,
-        image: String,
+// Define the Event schema
+const EventSchema = new mongoose_1.Schema({
+    user: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+    },
+    category: {
+        type: String,
+        required: true,
+    },
+    date: {
+        type: Date,
+        required: true,
+    },
+    location: {
+        type: String,
+        required: true,
+    },
+    vendors: [
+        {
+            vendorId: {
+                type: mongoose_1.default.Schema.Types.ObjectId,
+                ref: 'Vendor',
+            },
+            status: {
+                type: String,
+                enum: ['pending', 'confirmed', 'declined'],
+                default: 'pending',
+            },
+        },
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now,
     },
 });
-// Create a text index on multiple fields
-VendorSchema.index({
-    name: 'text',
-    category: 'text',
-    description: 'text',
-    'details.address': 'text'
-});
-const Vendor = mongoose_1.default.model('Vendor', VendorSchema);
-exports.default = Vendor;
+exports.default = mongoose_1.default.model('Event', EventSchema);
