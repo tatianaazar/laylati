@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from 'expo-router';
 import axios from 'axios';
 
@@ -11,8 +11,28 @@ const SignUpScreen = () => {
   const [email, setEmail] = useState('');
   const [phone_number, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState(''); // State to handle error messages
 
   const handleSignUp = async () => {
+    setErrorMessage(''); // Clear error message before validation
+
+    if (!name) {
+      setErrorMessage('Name must not be empty!');
+      return;
+    }
+    if (!email) {
+      setErrorMessage('Email must not be empty!');
+      return;
+    }
+    if (!phone_number) {
+      setErrorMessage('Phone number must not be empty!');
+      return;
+    }
+    if (!password) {
+      setErrorMessage('Password must not be empty!');
+      return;
+    }
+
     try {
       const response = await axios.post('http://192.168.1.250:5000/api/auth/register', {
         name,
@@ -22,19 +42,24 @@ const SignUpScreen = () => {
       });
 
       if (response.status === 201) {
-        Alert.alert('Success', 'Account created successfully');
+        // Redirect to main screen if successful
         navigation.replace('Main'); // Navigate to the main screen
       } else {
-        Alert.alert('Error', 'Something went wrong, please try again.');
+        setErrorMessage('Something went wrong, please try again.');
       }
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'An error occurred. Please try again.');
+      // Check for email already exists error
+      if (error.response && error.response.status === 400) {
+        setErrorMessage("There's already an existing LAYLATI account with this email!");
+      } else {
+        setErrorMessage('An error occurred. Please try again.');
+      }
     }
   };
 
   const goToSignIn = () => {
     navigation.navigate('Login');
-}
+  };
 
   return (
     <View style={styles.container}>
@@ -76,7 +101,10 @@ const SignUpScreen = () => {
           value={password} // Bind to the state variable
           onChangeText={setPassword}
         />
-    
+        
+        {/* Display error message */}
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
         <TouchableOpacity style={styles.signInButton} onPress={handleSignUp}>
           <Text style={styles.signInButtonText}>Sign Up</Text>
         </TouchableOpacity>
@@ -85,19 +113,19 @@ const SignUpScreen = () => {
       <View style={styles.socialIconsContainer}>
         <TouchableOpacity>
           <Image
-             source={require('../../assets/images/googlelogo.png')} // Replace with your Google icon path
+            source={require('../../assets/images/googlelogo.png')} // Replace with your Google icon path
             style={styles.socialIcon}
           />
         </TouchableOpacity>
         <TouchableOpacity>
           <Image
-             source={require('../../assets/images/facebooklogo.png')} // Replace with your Facebook icon path
+            source={require('../../assets/images/facebooklogo.png')} // Replace with your Facebook icon path
             style={styles.socialIcon}
           />
         </TouchableOpacity>
         <TouchableOpacity>
           <Image
-             source={require('../../assets/images/applelogo.png')} // Replace with your Apple icon path
+            source={require('../../assets/images/applelogo.png')} // Replace with your Apple icon path
             style={styles.socialIcon}
           />
         </TouchableOpacity>
@@ -105,7 +133,6 @@ const SignUpScreen = () => {
       <TouchableOpacity onPress={goToSignIn}>
         <Text style={styles.signUpText}>Already have an account? Sign in.</Text>
       </TouchableOpacity>
-
     </View>
   );
 };
@@ -162,6 +189,11 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     color: '#000000',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 20,
+    textAlign: 'center',
   },
 });
 

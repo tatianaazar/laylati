@@ -1,31 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Button, FlatList, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, TextInput, Modal } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 // Define the type for an event
 type Event = {
-  id: string;
+  _id: string;
   name: string;
-  type: string;
-  date: Date;
+  category: string;
+  date: string;
+  location: string;
 };
 
 const DashboardScreen = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddEventButton, setShowAddEventButton] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [eventName, setEventName] = useState('');
-  const [eventType, setEventType] = useState('');
+  const [eventCategory, setEventCategory] = useState('');
   const [eventDate, setEventDate] = useState(new Date());
+  const [eventLocation, setEventLocation] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [events, setEvents] = useState<Event[]>([]);
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          Alert.alert('Error', 'No token found, please log in again.');
+          return;
+        }
+
+        const response = await axios.get('http://192.168.1.250:5000/api/events', {
+          headers: {
+            'x-auth-token': token,
+          },
+        });
+
+        if (response.status === 200) {
+          setEvents(response.data); // Set events from the backend
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        Alert.alert('Error', 'Failed to fetch events.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // Function to handle the "Add Event" floating action button
   const handleFabPress = () => {
     setShowAddEventButton(!showAddEventButton);
-  };
-
-  const handleAddEventPress = () => {
-    setModalVisible(true);
   };
 
   const handleDateConfirm = (date: Date) => {
@@ -33,53 +65,143 @@ const DashboardScreen = () => {
     setDatePickerVisibility(false);
   };
 
-  const handleSaveEvent = () => {
-    const newEvent: Event = {
-      id: Math.random().toString(),
-      name: eventName,
-      type: eventType,
-      date: eventDate,
-    };
-    setEvents([...events, newEvent]);
-    setEventName('');
-    setEventType('');
-    setEventDate(new Date());
-    setModalVisible(false);
+  // Function to create or update an event
+  const handleSaveEvent = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Error', 'No token found, please log in again.');
+        return;
+      }
+
+      console.log(editingEvent); // Add this to ensure the ID is present
+
+      if (editingEvent) {
+        // Update existing event
+        console.log('Editing event ID:', editingEvent._id);
+        const response = await axios.put(
+          `http://192.168.1.250:5000/api/events/${editingEvent._id}`,
+          {
+            name: eventName,
+            category: eventCategory,
+            date: eventDate,
+            location: eventLocation,
+          },
+          {
+            headers: {
+              'x-auth-token': token,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setEvents(events.map(event => (event._id === editingEvent._id ? response.data : event)));
+          Alert.alert('Success', 'Event updated successfully');
+        }
+      } else {
+        // Create new event
+        const response = await axios.post(
+          'http://192.168.1.250:5000/api/events/create',
+          {
+            name: eventName,
+            category: eventCategory,
+            date: eventDate,
+            location: eventLocation,
+          },
+          {
+            headers: {
+              'x-auth-token': token,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setEvents([...events, response.data]); // Add new event to the list
+          Alert.alert('Success', 'Event created successfully');
+        }
+      }
+
+      setModalVisible(false);
+      setEventName('');
+      setEventCategory('');
+      setEventDate(new Date());
+      setEventLocation('');
+      setEditingEvent(null);
+    } catch (error) {
+      console.error('Error saving event:', error);
+      Alert.alert('Error', 'Failed to save event.');
+    }
   };
 
-  const handleDeleteEvent = (eventId: string) => {
+  // Function to delete an event
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Error', 'No token found, please log in again.');
+        return;
+      }
+
+      const response = await axios.delete(`http://192.168.1.250:5000/api/events/${eventId}`, {
+        headers: {
+          'x-auth-token': token,
+        },
+      });
+
+      if (response.status === 200) {
+        setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+        Alert.alert('Success', 'Event deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      Alert.alert('Error', 'Failed to delete event.');
+    }
+  };
+
+  // Function to handle 3 dots menu click
+  const handleEventOptions = (event: Event) => {
     Alert.alert(
-      'Delete Event',
-      'Are you sure you want to delete this event?',
+      'Event Options',
+      'What would you like to do?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          onPress: () => {
-            setEvents(events.filter(event => event.id !== eventId));
-          },
-          style: 'destructive',
-        },
+        { text: 'Edit', onPress: () => editEvent(event) },
+        { text: 'Delete', onPress: () => handleDeleteEvent(event._id), style: 'destructive' },
+        { text: 'Cancel', style: 'cancel' },
       ],
       { cancelable: true }
     );
   };
 
+  // Function to handle event edit
+  const editEvent = (event: Event) => {
+    console.log("Editing event ID:", event._id);
+    setEditingEvent(event);
+    setEventName(event.name);
+    setEventCategory(event.category);
+    setEventDate(new Date(event.date));
+    setEventLocation(event.location);
+    setModalVisible(true);
+  };
+
   const renderItem = ({ item }: { item: Event }) => (
     <View style={styles.eventItem}>
       <Text style={styles.eventName}>{item.name}</Text>
-      <TouchableOpacity onPress={() => handleDeleteEvent(item.id)} style={styles.iconContainer}>
-        <View style={styles.verticalDots}>
-          <View style={styles.dot} />
-          <View style={[styles.dot, { marginVertical: 3 }]} />
-          <View style={styles.dot} />
-        </View>
+      <Text style={styles.eventDetails}>{item.category}</Text>
+      <Text style={styles.eventDetails}>{new Date(item.date).toDateString()}</Text>
+      <TouchableOpacity onPress={() => handleEventOptions(item)} style={styles.iconContainer}>
+        <FontAwesome name="ellipsis-v" size={24} color="black" />
       </TouchableOpacity>
     </View>
   );
+  
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -87,6 +209,7 @@ const DashboardScreen = () => {
         <FontAwesome name="bars" size={24} color="black" style={styles.menuIcon} />
         <Text style={styles.title}>Dashboard</Text>
       </View>
+
       {events.length === 0 ? (
         <View style={styles.content}>
           <Text style={styles.message}>Oops, it looks like you haven’t created any new events</Text>
@@ -95,43 +218,46 @@ const DashboardScreen = () => {
         <FlatList
           data={events}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
         />
       )}
+
       {showAddEventButton && (
-        <TouchableOpacity style={styles.addEventButton} onPress={handleAddEventPress}>
+        <TouchableOpacity style={styles.addEventButton} onPress={() => setModalVisible(true)}>
           <Text style={styles.addEventButtonText}>Add new event</Text>
         </TouchableOpacity>
       )}
+
       <TouchableOpacity style={styles.fab} onPress={handleFabPress}>
         <FontAwesome name="plus" size={24} color="black" />
       </TouchableOpacity>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
+      {/* Modal for adding/editing an event */}
+      {modalVisible && (
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Add New Event</Text>
+            <Text style={styles.modalText}>{editingEvent ? 'Edit Event' : 'Add New Event'}</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter Event Name"
               value={eventName}
               onChangeText={setEventName}
-              placeholderTextColor={'black'}
+              placeholderTextColor="black"
             />
             <TextInput
               style={styles.input}
-              placeholder="Enter Event Type"
-              value={eventType}
-              onChangeText={setEventType}
-              placeholderTextColor={'black'}
+              placeholder="Enter Event Category"
+              value={eventCategory}
+              onChangeText={setEventCategory}
+              placeholderTextColor="black"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Event Location"
+              value={eventLocation}
+              onChangeText={setEventLocation}
+              placeholderTextColor="black"
             />
             <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={styles.datePicker}>
               <Text style={styles.datePickerText}>
@@ -145,17 +271,20 @@ const DashboardScreen = () => {
               onCancel={() => setDatePickerVisibility(false)}
             />
             <View style={styles.modalButtons}>
-              <Button title="Save" onPress={handleSaveEvent} />
-              <Button title="Cancel" onPress={() => setModalVisible(false)} color="red" />
+              <TouchableOpacity style={styles.saveButton} onPress={handleSaveEvent}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 };
 
-   
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -173,11 +302,15 @@ const styles = StyleSheet.create({
     left: 14,
     top: 24,
   },
+  iconContainer: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+  },
   title: {
     fontSize: 20,
     color: 'black',
     marginTop: 28,
-    fontFamily: 'Montserrat',
     fontWeight: '500',
   },
   content: {
@@ -188,15 +321,13 @@ const styles = StyleSheet.create({
   message: {
     width: 276,
     height: 72,
-    fontFamily: 'Montserrat', // Ensure you have Montserrat font loaded in your project
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 24.4,
     textAlign: 'center',
     opacity: 0.6,
-    color: 'gray', // Ensure the text color is set to black or the desired color
+    color: 'gray',
   },
-  
   fab: {
     position: 'absolute',
     bottom: 30,
@@ -217,15 +348,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addEventButton: {
-    width: 206 ,
     position: 'absolute',
     bottom: 100,
     right: 30,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: '#E6CBF6',
     backgroundColor: '#E6CBF6',
     flexDirection: 'row',
     alignItems: 'center',
@@ -233,11 +361,7 @@ const styles = StyleSheet.create({
   addEventButtonText: {
     color: 'black',
     marginLeft: 24,
-    alignItems: 'center',
-    fontFamily: 'Montserrat',
-    fontSize: 15, 
-
-
+    fontSize: 15,
   },
   modalContainer: {
     flex: 1,
@@ -265,8 +389,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'black',
-    fontFamily: 'Montserrat',
   },
   input: {
     height: 40,
@@ -276,7 +398,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 10,
     width: '100%',
-    color: 'black',
   },
   datePicker: {
     height: 40,
@@ -297,46 +418,40 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 20,
   },
-  eventItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  saveButton: {
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderWidth: 1,
-    borderColor: '#A1A1A1',
-    borderRadius: 50, // High border radius to make it fully rounded
-    backgroundColor: '#ffffff',
-    marginBottom: 10,
-    width: '90%',
-    alignSelf: 'center',
-    
+    backgroundColor: '#E6CBF6',
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: 'black',
+  },
+  cancelButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: 'red',
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    color: 'white',
+  },
+  eventItem: {
+    padding: 16,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 8,
+    marginBottom: 8,
   },
   eventName: {
     fontSize: 18,
-    fontWeight: '400',
-    color: '#000000',
-    textAlign: 'center',
-    flex: 1,
-    fontFamily: 'Montserrat',
+    fontWeight: 'bold',
   },
   eventDetails: {
-    fontSize: 12,
+    fontSize: 14,
     color: 'gray',
   },
   listContent: {
-    paddingBottom: 100,
-  },
-  verticalDots: {
-    justifyContent: 'center', // Center the dots vertically within the container
-    alignItems: 'center',
-    height: 24, // Adjust height to match the space between dots
-  },
-  dot: {
-    width: 5, // Size of each dot
-    height: 5,
-    borderRadius: 9, // Make the dots round
-    backgroundColor: '#4A4A4A', // Black color for the dots
+    paddingBottom: -50,  // Add some padding to prevent content from being cut off
   },
 });
 
