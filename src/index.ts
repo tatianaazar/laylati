@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import vendorRoutes from './routes/vendorRoutes';
 import eventRoutes from './routes/eventRoutes';
+import requestRoutes from './routes/requestRoutes';
 import User from './models/userModel';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -34,6 +35,8 @@ app.use('/api/vendors', vendorRoutes);
 app.use('/api/auth', authRoutes);
 
 app.use('/api/events', eventRoutes);
+
+app.use('/api', requestRoutes);
 
 app.get('/', (req, res) => res.send('Server is running!'));
 
