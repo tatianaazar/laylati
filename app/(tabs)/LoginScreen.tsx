@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 import { useNavigation } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { useCart } from '../../context/CartContext';
 const { width } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // New state to store error messages
+  const [errorMessage, setErrorMessage] = useState(''); // New state to store error messages 
+  const [loading, setLoading] = useState(true)
 
   // Store the token in AsyncStorage
   const storeToken = async (token: string) => {
     try {
-      await AsyncStorage.setItem('token', token); // Store token
+      await AsyncStorage.setItem('token', token);
     } catch (error) {
       console.error('Error saving token:', error);
     }
@@ -31,6 +32,8 @@ const LoginScreen = () => {
       return;
     }
 
+    setLoading(true); // Set loading to true when starting the login process
+
     try {
       const response = await axios.post('http://192.168.1.250:5000/api/auth/login', {
         email,
@@ -41,9 +44,8 @@ const LoginScreen = () => {
         const token = response.data.token;
 
         if (token) {
-          // Store the token in AsyncStorage
           await storeToken(token);
-          navigation.replace('Main'); // Navigate to the main screen
+          navigation.navigate('Main'); // Navigate to the main screen
         } else {
           setErrorMessage('Token not received.');
         }
@@ -62,6 +64,8 @@ const LoginScreen = () => {
       } else {
         setErrorMessage('An error occurred. Please try again.');
       }
+    } finally {
+      setLoading(false); // Stop loading once the request is completed
     }
   };
 

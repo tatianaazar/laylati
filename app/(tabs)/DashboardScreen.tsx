@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, TextInput, Modal } from 'react-native';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { useCart } from '../../context/CartContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 // Define the type for an event
 type Event = {
@@ -15,7 +16,7 @@ type Event = {
 };
 
 const DashboardScreen = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { events, fetchUserEvents } = useCart();
   const [loading, setLoading] = useState(true);
   const [showAddEventButton, setShowAddEventButton] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,33 +27,19 @@ const DashboardScreen = () => {
   const [eventLocation, setEventLocation] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
+
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Error', 'No token found, please log in again.');
-          return;
-        }
-
-        const response = await axios.get('http://192.168.1.250:5000/api/events', {
-          headers: {
-            'x-auth-token': token,
-          },
-        });
-
-        if (response.status === 200) {
-          setEvents(response.data); // Set events from the backend
-        }
+        await fetchUserEvents(); // Fetch the events from the CartContext, no need to assign
       } catch (error) {
         console.error('Error fetching events:', error);
         Alert.alert('Error', 'Failed to fetch events.');
       } finally {
-        setLoading(false);
+        setLoading(false); // Ensure loading state is set to false
       }
     };
-
-    fetchEvents();
+    fetchData();
   }, []);
 
   // Function to handle the "Add Event" floating action button
@@ -65,7 +52,15 @@ const DashboardScreen = () => {
     setDatePickerVisibility(false);
   };
 
-  // Function to create or update an event
+  const resetModal = () => {
+    setModalVisible(false);
+    setEventName('');
+    setEventCategory('');
+    setEventDate(new Date());
+    setEventLocation('');
+    setEditingEvent(null);
+  };
+
   const handleSaveEvent = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -73,67 +68,43 @@ const DashboardScreen = () => {
         Alert.alert('Error', 'No token found, please log in again.');
         return;
       }
-
-      console.log(editingEvent); // Add this to ensure the ID is present
-
+  
+      const eventPayload = {
+        name: eventName,
+        category: eventCategory,
+        date: eventDate,
+        location: eventLocation,
+      };
+  
       if (editingEvent) {
-        // Update existing event
-        console.log('Editing event ID:', editingEvent._id);
         const response = await axios.put(
           `http://192.168.1.250:5000/api/events/${editingEvent._id}`,
-          {
-            name: eventName,
-            category: eventCategory,
-            date: eventDate,
-            location: eventLocation,
-          },
-          {
-            headers: {
-              'x-auth-token': token,
-            },
-          }
+          eventPayload,
+          { headers: { 'x-auth-token': token } }
         );
-
+  
         if (response.status === 200) {
-          setEvents(events.map(event => (event._id === editingEvent._id ? response.data : event)));
+          await fetchUserEvents(); // Fetch updated events from CartContext
           Alert.alert('Success', 'Event updated successfully');
         }
       } else {
-        // Create new event
         const response = await axios.post(
           'http://192.168.1.250:5000/api/events/create',
-          {
-            name: eventName,
-            category: eventCategory,
-            date: eventDate,
-            location: eventLocation,
-          },
-          {
-            headers: {
-              'x-auth-token': token,
-            },
-          }
+          eventPayload,
+          { headers: { 'x-auth-token': token } }
         );
-
         if (response.status === 200) {
-          setEvents([...events, response.data]); // Add new event to the list
+          await fetchUserEvents(); // Fetch updated events from CartContext
           Alert.alert('Success', 'Event created successfully');
         }
       }
-
-      setModalVisible(false);
-      setEventName('');
-      setEventCategory('');
-      setEventDate(new Date());
-      setEventLocation('');
-      setEditingEvent(null);
+      resetModal(); // Reset the modal fields after successful creation or update
     } catch (error) {
       console.error('Error saving event:', error);
       Alert.alert('Error', 'Failed to save event.');
     }
   };
-
-  // Function to delete an event
+  
   const handleDeleteEvent = async (eventId: string) => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -141,15 +112,13 @@ const DashboardScreen = () => {
         Alert.alert('Error', 'No token found, please log in again.');
         return;
       }
-
+  
       const response = await axios.delete(`http://192.168.1.250:5000/api/events/${eventId}`, {
-        headers: {
-          'x-auth-token': token,
-        },
+        headers: { 'x-auth-token': token },
       });
-
+  
       if (response.status === 200) {
-        setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+        await fetchUserEvents(); // Fetch updated events from CartContext after deletion
         Alert.alert('Success', 'Event deleted successfully');
       }
     } catch (error) {
@@ -157,8 +126,8 @@ const DashboardScreen = () => {
       Alert.alert('Error', 'Failed to delete event.');
     }
   };
+  
 
-  // Function to handle 3 dots menu click
   const handleEventOptions = (event: Event) => {
     Alert.alert(
       'Event Options',
@@ -172,9 +141,7 @@ const DashboardScreen = () => {
     );
   };
 
-  // Function to handle event edit
   const editEvent = (event: Event) => {
-    console.log("Editing event ID:", event._id);
     setEditingEvent(event);
     setEventName(event.name);
     setEventCategory(event.category);
@@ -193,7 +160,6 @@ const DashboardScreen = () => {
       </TouchableOpacity>
     </View>
   );
-  
 
   if (loading) {
     return (
@@ -367,6 +333,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: 200
   },
   modalView: {
     margin: 20,
@@ -383,6 +350,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     width: '90%',
+    paddingBottom: 100
   },
   modalText: {
     marginBottom: 15,
@@ -451,7 +419,7 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   listContent: {
-    paddingBottom: -50,  // Add some padding to prevent content from being cut off
+    paddingBottom: -50, // Add some padding to prevent content from being cut off
   },
 });
 

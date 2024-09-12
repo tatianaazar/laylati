@@ -5,6 +5,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import PackageIcon from '../../assets/images/packageBagTick.svg';
 import ChatIcon from '../../assets/images/chatVendorPurple.svg';
 import BagIcon from '../../assets/images/bag.svg';
+import { useCart } from '../../context/CartContext';
 
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -14,8 +15,12 @@ const VendorDetailsScreen = () => {
   const navigation = useNavigation();
   const { vendor } = route.params;
 
+  const { addToCart } = useCart();
   const [images, setImages] = useState([vendor.details?.image]);
   const [activeSlide, setActiveSlide] = useState(0);
+
+  // Selected package state
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
   useEffect(() => {
     if (vendor.details?.image) {
@@ -35,6 +40,12 @@ const VendorDetailsScreen = () => {
       ),
     });
   }, [navigation]);
+
+  const handlePackageSelect = (packageName: string) => {
+    setSelectedPackage(packageName);
+    addToCart(vendor, packageName);
+    console.log('Success', `${vendor.name} - ${packageName} added to cart`)
+  }
 
   const renderItem = ({ item }) => (
     <Image source={{ uri: item }} style={styles.carouselImage} />
@@ -76,22 +87,26 @@ const VendorDetailsScreen = () => {
         <View style={styles.infoContainer}>
           <Text style={styles.vendorDescription}>{vendor.details?.description}</Text>
 
-          <TouchableOpacity style={styles.packageButton}>
+          {/* Package buttons with click handlers */}
+          <TouchableOpacity style={styles.packageButton} onPress={() => handlePackageSelect('Package A')}>
             <Text style={styles.buttonText}>Package A</Text>
             <PackageIcon width={20} height={20} style={styles.packageIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.packageButton}>
+          <TouchableOpacity style={styles.packageButton} onPress={() => handlePackageSelect('Package B')}>
             <Text style={styles.buttonText}>Package B</Text>
             <PackageIcon width={20} height={20} style={styles.packageIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.packageButton}>
+          <TouchableOpacity style={styles.packageButton} onPress={() => handlePackageSelect('Package C')}>
             <Text style={styles.buttonText}>Package C</Text>
             <PackageIcon width={20} height={20} style={styles.packageIcon} />
           </TouchableOpacity>
+
+          {/* Chat button */}
           <TouchableOpacity style={styles.chatButton}>
             <Text style={styles.buttonText}>Chat with vendor</Text>
             <ChatIcon width={20} height={20} style={styles.chatIcon} />
           </TouchableOpacity>
+
         </View>
       </ScrollView>
     </View>

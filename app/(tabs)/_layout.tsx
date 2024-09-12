@@ -16,6 +16,7 @@ import { Montserrat_400Regular, Montserrat_600SemiBold, Montserrat_500Medium, Mo
 import AppLoading from 'expo-app-loading';
 import { RootStackParamList } from './types/types';
 
+import { CartProvider } from '../../context/CartContext';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -102,6 +103,7 @@ export default function Layout() {
   }
 
   return (
+    <CartProvider> 
     <Stack.Navigator initialRouteName="Splash">
       <Stack.Screen
         name="Splash"
@@ -326,5 +328,6 @@ options={{
 
 
 </Stack.Navigator>
+</CartProvider>
   );
 }
